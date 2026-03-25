@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata: {name: dao-service}
+spec:
+  selector: {app: dao}
+  ports: [{port: 5000}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: dao}
+spec:
+  selector: {matchLabels: {app: dao}}
+  template:
+    metadata: {labels: {app: dao}}
+    spec:
+      containers:
+      - name: dao
+        image: dao:v2
+        command: ["opentelemetry-instrument"]
+        args: ["python", "app.py"]
+        env:
+        - name: OTEL_SERVICE_NAME
+          value: "dao"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4317"
+        - name: OTEL_METRICS_EXPORTER
+          value: "otlp"
+        - name: OTEL_METRIC_EXPORT_INTERVAL
+          value: "15000"
+        resources:
+          requests:
+            cpu: "100m"      # 基准需求：0.1个CPU核（HPA算百分比的分母）
+            memory: "128Mi"  # 基础内存需求
+          limits:
+            cpu: "500m"      # 最大限制：0.5个CPU核（防止一个Pod把整台机器跑死）
+            memory: "256Mi"  # 最大内存限制
+        ports: [{containerPort: 5000}]
+        livenessProbe:  # 存活检查，失败会重启容器
+          httpGet: {path: /health, port: 5000}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe: # 就绪检查，失败后 Service 会剔除该 Pod
+          httpGet: {path: /health, port: 5000}
+          initialDelaySeconds: 2
