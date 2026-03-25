@@ -6,6 +6,7 @@ spec:
   template:
     metadata: {labels: {app: frontend}}
     spec:
+      replicas: 3
       containers:
       - name: frontend
         image: frontend:v2
