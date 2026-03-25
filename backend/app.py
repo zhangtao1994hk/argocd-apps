@@ -3,7 +3,6 @@ import logging
 import requests
 from flask import Flask, jsonify
 
-# 日志配置
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s : %(message)s')
 logger = logging.getLogger("backend-service")
 
