@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otel-collector
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart: opentelemetry-collector
+    targetRevision: 0.147.1 
+    helm:
+      values: |
+        mode: deployment
+        
+        # 核心配置：定义数据流向
+        config:
+          receivers:
+            otlp:
+              protocols:
+                grpc:
+                http:
+          
+          exporters:
+            # 1. 转发 Trace 到 Tempo
+            otlp/tempo:
+              endpoint: "tempo-app:4317"
+              tls:
+                insecure: true
+            
+            # 2. 转发 Metrics 到 Prometheus
+            prometheusremotewrite:
+              endpoint: "http://prometheus-kube-prometheus-stack-prometheus:9090/api/v1/write"
+
+          service:
+            pipelines:
+              traces:
+                receivers: [otlp]
+                exporters: [otlp/tempo]
+              metrics:
+                receivers: [otlp]
+                exporters: [prometheusremotewrite]
+
+        # 暴露必要的 Service 端口
+        ports:
+          otlp-grpc:
+            enabled: true
+            containerPort: 4317
+          otlp-http:
+            enabled: true
+            containerPort: 4318
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
