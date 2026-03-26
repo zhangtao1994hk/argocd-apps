@@ -13,10 +13,12 @@ spec:
     targetRevision: 82.14.1
     helm:
       # 1. 自动安装 CRDs，这是合并方案的核心
-      includeCRDs: true
+      #includeCRDs: true
       # 2. 集中化的配置
       values: |
         # 关闭默认不需要的组件
+        crds:
+          enabled: true
         alertmanager:
           enabled: true
         nodeExporter:
