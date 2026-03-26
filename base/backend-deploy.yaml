@@ -10,7 +10,6 @@ kind: Deployment
 metadata: {name: backend}
 spec:
   selector: {matchLabels: {app: backend}}
-  replicas: 4
   template:
     metadata: {labels: {app: backend}}
     spec:

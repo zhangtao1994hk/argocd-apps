@@ -3,7 +3,6 @@ kind: Deployment
 metadata: {name: frontend}
 spec:
   selector: {matchLabels: {app: frontend}}
-  replicas: 3
   template:
     metadata: {labels: {app: frontend}}
     spec:
