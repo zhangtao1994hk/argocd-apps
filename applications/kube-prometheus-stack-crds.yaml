@@ -11,7 +11,20 @@ spec:
     targetRevision: 82.14.1
     # 这一行是关键：只渲染 crds 目录下的东西，不渲染 templates
     helm:
-      includeCRDs: true
+      #includeCRDs: true
+      values: |
+        alertmanager:
+          enabled: false
+        grafana:
+          enabled: false
+        kubeStateMetrics:
+          enabled: false
+        nodeExporter:
+          enabled: false
+        prometheus:
+          enabled: false
+        prometheusOperator:
+          enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
