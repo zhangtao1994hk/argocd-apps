@@ -10,3 +10,6 @@ images:
 - name: dao-image
   newName: ghcr.io/zhangtao1994hk/argocd-apps/dao
   newTag: 2f7e62a17c9aebf90b9289064e21d489f27aad83
+- name: frontend-image
+  newName: ghcr.io/zhangtao1994hk/argocd-apps/frontend
+  newTag: 84df21737139a10dda610b37fe1567492ab14285
