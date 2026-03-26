@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 82.14.1
+    helm:
+      # 1. 自动安装 CRDs，这是合并方案的核心
+      includeCRDs: true
+      # 2. 集中化的配置
+      values: |
+        # 关闭默认不需要的组件
+        alertmanager:
+          enabled: false
+        
+        # 保持 Prometheus 开启
+        prometheus:
+          enabled: true
+          prometheusSpec:
+            remoteWriteDashboards: false # 防止 nil pointer 错误
+            
+        # 开启 Grafana 及 Ingress
+        grafana:
+          enabled: true
+          defaultDashboardsEnabled: false # 如果渲染报错，开启此项
+          ingress:
+            enabled: true
+            ingressClassName: traefik
+            hosts:
+              - grafana.local
+            paths:
+              - /
+          # 设置密码的方式（如果用 Secret，此处不需要 adminPassword）
+          adminPassword: null # 必须设为 null，防止覆盖
+          adminPasswordKey: admin-password
+          adminPasswordVariable: grafana-admin-credentials
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true # 关键：使用 SSA 避免 Annotation 超限
+  
+  # 3. 终极防漂移配置：彻底消除 OutOfSync
+  ignoreDifferences:
+    - group: "*"
+      kind: "*"
+      jsonPointers:
+        - /metadata/managedFields
+    - group: "apiextensions.k8s.io"
+      kind: "CustomResourceDefinition"
+      jsonPointers:
+        - /metadata/annotations
+        - /status
+    - group: "monitoring.coreos.com"
+      kind: "Prometheus"
+      jsonPointers:
+        - /status
