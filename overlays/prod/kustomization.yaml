@@ -6,4 +6,4 @@ resources:
 images:
 - name: backend-image
   newName: ghcr.io/zhangtao1994hk/argocd-apps/backend
-  newTag: d58d799c68f287b77de74ff57d42aeb330c28af4
+  newTag: ae6282c3493c78f24e000e7016f023a3fabbc6e2
