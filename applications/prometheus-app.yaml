@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git'
+    targetRevision: HEAD
+    path: infrastructure/prometheus # 只要这里有 values.yaml，ArgoCD 就能找到
+    helm:
+      valueFiles:
+        - values.yaml
+      # 在这里通过 chart 定义来拉取远程的包
+      releaseName: prometheus
+      chart: kube-prometheus-stack
+      repoURL: https://prometheus-community.github.io/helm-charts
+      targetRevision: 60.0.0
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

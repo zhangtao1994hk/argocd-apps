@@ -1,0 +1,15 @@
+grafana:
+  enabled: true
+  adminPassword: "admin" # 生产环境记得改成更复杂的
+  ingress:
+    enabled: false # 先关掉 Ingress，测试通了再开
+
+prometheus:
+  prometheusSpec:
+    retention: 5d # 数据保留 5 天
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 10Gi # 开启持久化存储，防止重启丢失数据
