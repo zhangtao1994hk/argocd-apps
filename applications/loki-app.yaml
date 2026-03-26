@@ -27,6 +27,17 @@ spec:
             persistence:
               enabled: true
               size: 10Gi
+          read:
+            replicas: 1
+          write:
+            replicas: 1
+          backend:
+            replicas: 1
+          monitoring:
+            serviceMonitor:
+              enabled: false
+            selfMonitoring:
+              enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
