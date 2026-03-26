@@ -21,9 +21,15 @@ spec:
         args: ["python", "app.py"]
         env:
         - name: OTEL_SERVICE_NAME
-          value: "backend"
+          value: "backend-service"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "http://otel-collector:4317"
+          value: "http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.name=backend-service,service.namespace=monitoring"
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: "grpc"
+        - name: OTEL_PYTHON_LOG_CORRELATION
+          value: "true"
         - name: OTEL_METRIC_EXPORTER
           value: "otlp"
         - name: OTEL_METRIC_EXPORT_INTERVAL
