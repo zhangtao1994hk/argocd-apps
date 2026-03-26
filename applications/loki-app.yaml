@@ -6,12 +6,41 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://grafana.github.io/helm-charts
+    repoURL: https://grafana-community.github.io/helm-charts
     chart: loki
-    targetRevision: 6.55.0
+    targetRevision: 6.57.0
     helm:
       valueFiles:
         - values.yaml
+      values: |
+        loki:
+          # 👇 关键：启用本地文件存储，不需要对象存储
+          common:
+            storage:
+              backend: filesystem
+          # 👇 填这三个只是为了过校验，实际不会用
+          storage:
+            bucketNames:
+              chunks: chunks
+              ruler: ruler
+              admin: admin
+          # 👇 关闭所有依赖外部存储的功能
+          singleBinary:
+            persistence:
+              enabled: true
+              size: 10Gi
+          # 👇 测试环境最小化
+          read:
+            replicas: 1
+          write:
+            replicas: 1
+          backend:
+            replicas: 1
+          monitoring:
+            serviceMonitor:
+              enabled: false
+            selfMonitoring:
+              enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
