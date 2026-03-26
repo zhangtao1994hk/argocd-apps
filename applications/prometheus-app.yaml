@@ -52,6 +52,30 @@ spec:
           adminPassword: null # 必须设为 null，防止覆盖
           adminPasswordKey: admin-password
           adminPasswordVariable: grafana-admin-credentials
+          additionalDataSources:
+            - name: Loki
+              type: loki
+              url: http://loki-app:3100 # 确保这是你 Loki 的 Service 名称
+              access: proxy
+              isDefault: false
+              jsonData:
+                derivedFields:
+                  - datasourceUid: tempo # 关联到你的 Tempo UID
+                    matcherRegex: "trace_id=(\\w+)"
+                    name: TraceID
+                    url: "$${__value.raw}"
+
+            - name: Tempo
+              type: tempo
+              url: http://tempo-app:3200
+              access: proxy
+              jsonData:
+                httpMethod: GET
+                serviceMap:
+                  datasourceUid: prometheus # 指向你的 Prometheus 数据源 UID
+                nodeGraph:
+                  enabled: true
+              isDefault: false
 
   destination:
     server: https://kubernetes.default.svc
