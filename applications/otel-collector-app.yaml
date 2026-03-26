@@ -12,7 +12,8 @@ spec:
     helm:
       values: |
         mode: deployment
-        
+        image:
+          repository: otel/opentelemetry-collector-contrib
         # 核心配置：定义数据流向
         config:
           receivers:
