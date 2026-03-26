@@ -32,13 +32,14 @@ spec:
         prometheus:
           enabled: true
           prometheusSpec:
-        ingress:
-          enabled: true
-          ingressClassName: traefik # K3s 默认是 traefik
-          hosts:
-            - prometheus.local # 修改为你想要的域名
-          paths:
-            - /
+            remoteWriteDashboards: false 
+            ingress:
+              enabled: true
+              ingressClassName: traefik # K3s 默认是 traefik
+              hosts:
+                - prometheus.local # 修改为你想要的域名
+              paths:
+                - /
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
