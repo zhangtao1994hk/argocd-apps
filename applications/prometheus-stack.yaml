@@ -20,10 +20,25 @@ spec:
           enabled: true
         grafana:
           enabled: true
+          ingress:
+            enabled: true
+            ingressClassName: traefik  # K3s 默认 Ingress Controller
+            hosts:
+              - grafana.local          # 这里设置你自定义的域名
+            paths:
+              - /
         alertmanager:
           enabled: true
         prometheus:
           enabled: true
+          prometheusSpec:
+        ingress:
+          enabled: true
+          ingressClassName: traefik # K3s 默认是 traefik
+          hosts:
+            - prometheus.local # 修改为你想要的域名
+          paths:
+            - /
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
