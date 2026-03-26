@@ -33,3 +33,21 @@ jobs:
           context: ./backend
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Update backend image tag in K8s manifest
+        run: |
+          # 指定更新 manifests/backend-deploy.yaml
+          # 使用 sed 替换 image 字段
+          sed -i "s|image: ghcr.io/zhangtao1994hk/argocd-apps/backend:.*|image: ghcr.io/zhangtao1994hk/argocd-apps/backend:${{ github.sha }}|g" manifests/backend-deploy.yaml
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # 只提交修改过的那个 yaml 文件
+          git add manifests/backend-deploy.yaml
+          
+          # 提交并推送到 GitHub
+          git commit -m "chore(backend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
+          git push origin main
