@@ -49,7 +49,7 @@ jobs:
           # 【修改点4】替换 dao-deploy.yaml 中的镜像
           # sed -i "s|image: ghcr.io/${{ github.repository }}/dao:.*|image: ghcr.io/${{ github.repository }}/dao:${{ github.sha }}|g" manifests/dao-deploy.yaml
           cd overlays/prod
-          kustomize edit set image dao-image=ghcr.io/zhangtao1994hk/argocd-apps/dao:${{ github.sha }}
+          kustomize edit set image ghcr.io/zhangtao1994hk/argocd-apps/dao=ghcr.io/zhangtao1994hk/argocd-apps/dao:${{ github.sha }}
 
       - name: Commit and Push changes
         run: |
