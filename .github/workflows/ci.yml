@@ -1,5 +1,8 @@
 name: Build and Push Backend Image
 
+permissions:
+  contents: write
+
 on:
   push:
     paths:
