@@ -20,8 +20,10 @@ spec:
             otlp:
               protocols:
                 grpc:
+                  endpoint: 0.0.0.0:4317
                 http:
-          
+                  endpoint: 0.0.0.0:4318
+
           exporters:
             # 1. 转发 Trace 到 Tempo
             otlp/tempo:
