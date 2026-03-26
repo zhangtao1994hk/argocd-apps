@@ -34,7 +34,13 @@ spec:
         # 开启 Grafana 及 Ingress
         grafana:
           enabled: true
-          defaultDashboardsEnabled: false # 如果渲染报错，开启此项
+          defaultDashboardsEnabled: true # 如果渲染报错，开启此项
+          prometheus:
+            enabled: true
+          sidecar:
+            dashboards:
+              enabled: true
+              searchNamespace: ALL
           ingress:
             enabled: true
             ingressClassName: traefik
