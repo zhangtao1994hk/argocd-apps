@@ -14,9 +14,9 @@ spec:
       values: |
         crds:
           enabled: false
-        prometheus-node-exporter:
+        nodeExporter:
           enabled: false
-        kube-state-metrics:
+        kubeStateMetrics:
           enabled: false
         grafana:
           enabled: false
