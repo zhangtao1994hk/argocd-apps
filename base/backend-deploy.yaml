@@ -17,7 +17,8 @@ spec:
       containers:
       - name: backend
         #image: ghcr.io/zhangtao1994hk/argocd-apps/backend:f6351ee87e03564386d2b20034f1eadf203eeee9
-        image: backend-image 
+        # image: backend-image 
+        image: ghcr.io/zhangtao1994hk/argocd-apps/backend:ae6282c3493c78f24e000e7016f023a3fabbc6e2
         command: ["opentelemetry-instrument"]
         args: ["python", "app.py"]
         env:
