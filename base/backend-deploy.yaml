@@ -1,29 +1,31 @@
 apiVersion: v1
 kind: Service
-metadata: {name: dao-service}
+metadata: {name: backend-service}
 spec:
-  selector: {app: dao}
+  selector: {app: backend}
   ports: [{port: 5000}]
 ---
 apiVersion: apps/v1
 kind: Deployment
-metadata: {name: dao}
+metadata: {name: backend}
 spec:
-  selector: {matchLabels: {app: dao}}
+  selector: {matchLabels: {app: backend}}
+  replicas: 4
   template:
-    metadata: {labels: {app: dao}}
+    metadata: {labels: {app: backend}}
     spec:
       containers:
-      - name: dao
-        image: ghcr.io/zhangtao1994hk/argocd-apps/dao:c1e43f95b4cee5a74f0d08b25f28953e4e229edc
+      - name: backend
+        #image: ghcr.io/zhangtao1994hk/argocd-apps/backend:f6351ee87e03564386d2b20034f1eadf203eeee9
+        image: backend-image:latest 
         command: ["opentelemetry-instrument"]
         args: ["python", "app.py"]
         env:
         - name: OTEL_SERVICE_NAME
-          value: "dao"
+          value: "backend"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector:4317"
-        - name: OTEL_METRICS_EXPORTER
+        - name: OTEL_METRIC_EXPORTER
           value: "otlp"
         - name: OTEL_METRIC_EXPORT_INTERVAL
           value: "15000"

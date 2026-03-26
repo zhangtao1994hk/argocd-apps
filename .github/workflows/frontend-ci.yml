@@ -34,6 +34,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v2
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -44,15 +47,19 @@ jobs:
       - name: Update frontend image tag in K8s manifest
         run: |
           # 【修改点4】替换 frontend-deploy.yaml 中的镜像
-          sed -i "s|image: ghcr.io/${{ github.repository }}/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" manifests/frontend-deploy.yaml
-
+          #sed -i "s|image: ghcr.io/${{ github.repository }}/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" manifests/frontend-deploy.yaml
+          cd overlays/prod
+          kustomize edit set image frontend-image=ghcr.io/zhangtao1994hk/argocd-apps/frontend:${{ github.sha }}
+      
+ 
       - name: Commit and Push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          git add manifests/frontend-deploy.yaml
-          
+          #git add manifests/frontend-deploy.yaml
+          git add kustomization.yaml
+
           git commit -m "chore(frontend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
           
           # 【重点防御】先 pull 一下最新的代码再 push，防止多个 Action 同时修改代码导致冲突

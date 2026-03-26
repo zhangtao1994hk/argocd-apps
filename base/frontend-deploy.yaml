@@ -1,29 +1,23 @@
-apiVersion: v1
-kind: Service
-metadata: {name: backend-service}
-spec:
-  selector: {app: backend}
-  ports: [{port: 5000}]
----
 apiVersion: apps/v1
 kind: Deployment
-metadata: {name: backend}
+metadata: {name: frontend}
 spec:
-  selector: {matchLabels: {app: backend}}
-  replicas: 4
+  selector: {matchLabels: {app: frontend}}
+  replicas: 3
   template:
-    metadata: {labels: {app: backend}}
+    metadata: {labels: {app: frontend}}
     spec:
       containers:
-      - name: backend
-        image: ghcr.io/zhangtao1994hk/argocd-apps/backend:f6351ee87e03564386d2b20034f1eadf203eeee9
+      - name: frontend
+        #image: ghcr.io/zhangtao1994hk/argocd-apps/frontend:c1e43f95b4cee5a74f0d08b25f28953e4e229edc
+        image: frontend:latest 
         command: ["opentelemetry-instrument"]
-        args: ["python", "app.py"]
+        args: ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
         env:
-        - name: OTEL_SERVICE_NAME
-          value: "backend"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector:4317"
+        - name: OTEL_SERVICE_NAME
+          value: "frontend"
         - name: OTEL_METRIC_EXPORTER
           value: "otlp"
         - name: OTEL_METRIC_EXPORT_INTERVAL
