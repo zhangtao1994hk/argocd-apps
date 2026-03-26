@@ -19,6 +19,7 @@ def get_product(pid):
         
         if response.status_code == 200:
             data = response.json()
+
             # 这里可以添加一些业务逻辑，比如价格打折
             data['price'] = round(data['price'] * 0.9, 2)
             logger.info(f"Backend retrieved and processed product {pid}")
