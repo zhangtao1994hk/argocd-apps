@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: frontend:v2
+        image: ghcr.io/zhangtao1994hk/argocd-apps/frontend:v2
         command: ["opentelemetry-instrument"]
         args: ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
         env:

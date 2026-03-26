@@ -1,0 +1,60 @@
+name: Build and Push DAO Image
+
+on:
+  push:
+    paths:
+      - 'dao/**' # 【修改点1】监听 dao
+  workflow_dispatch:
+
+concurrency:
+  group: git-push-to-manifests
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/dao # 【修改点2】镜像名改为 dao
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./dao # 【修改点3】构建目录改为 dao
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Update dao image tag in K8s manifest
+        run: |
+          # 【修改点4】替换 dao-deploy.yaml 中的镜像
+          sed -i "s|image: ghcr.io/${{ github.repository }}/dao:.*|image: ghcr.io/${{ github.repository }}/dao:${{ github.sha }}|g" manifests/dao-deploy.yaml
+
+      - name: Commit and Push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          git add manifests/dao-deploy.yaml
+          
+          git commit -m "chore(dao): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
+          
+          # 【重点防御】同样加上 pull --rebase
+          git pull --rebase origin main
+          git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main

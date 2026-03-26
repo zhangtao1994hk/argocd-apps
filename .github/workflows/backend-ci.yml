@@ -7,6 +7,12 @@ on:
   push:
     paths:
       - 'backend/**' # 只有 backend 目录有变动才触发
+  workflow_dispatch:  
+
+concurrency:
+  group: git-push-to-manifests
+  cancel-in-progress: false
+
 
 env:
   REGISTRY: ghcr.io
@@ -55,4 +61,6 @@ jobs:
           
           # 提交并推送到 GitHub
           git commit -m "chore(backend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
+          git pull --rebase origin main
           git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
+
