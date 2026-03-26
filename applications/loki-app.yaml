@@ -13,6 +13,7 @@ spec:
       values: |
         # 1. 禁用多租户 (解决你的 401 错误)
         loki:
+          useTestSchema: true
           auth_enabled: false
         
         # 2. 部署模式
