@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: dao
-        #image: ghcr.io/zhangtao1994hk/argocd-apps/dao:c1e43f95b4cee5a74f0d08b25f28953e4e229edc
-        image: dao-image
+        image: ghcr.io/zhangtao1994hk/argocd-apps/dao:c1e43f95b4cee5a74f0d08b25f28953e4e229edc
+        #image: dao-image
         command: ["opentelemetry-instrument"]
         args: ["python", "app.py"]
         env:
