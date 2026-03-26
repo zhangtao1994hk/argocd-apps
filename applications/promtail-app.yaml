@@ -12,7 +12,7 @@ spec:
     helm:
       values: |
         config:
-          lokiAddress: http://loki-gateway:80/loki/api/v1/push
+          lokiAddress: http://loki-app-gateway:80/loki/api/v1/push
           snippets:
             pipelineStages:
               - docker: {}
