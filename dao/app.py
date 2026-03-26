@@ -2,7 +2,9 @@ import os
 import logging
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-# 1. 日志配置
+
+
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s : %(message)s')
 logger = logging.getLogger("dao-service")
 
