@@ -8,8 +8,7 @@ spec:
   source:
     repoURL: https://grafana.github.io/helm-charts
     chart: loki
-    targetRevision: 6.9.0
-    path: infrastructure/loki
+    targetRevision: 6.18.3
     helm:
       valueFiles:
         - values.yaml
@@ -20,3 +19,7 @@ spec:
     automated:
       selfHeal: true
       prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - Replace=true
