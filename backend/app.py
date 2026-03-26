@@ -8,7 +8,6 @@ logger = logging.getLogger("backend-service")
 
 app = Flask(__name__)
 
-# K3s Service DNS: 假设你在 K8s 里 Service 名字叫 dao-service
 DAO_URL = os.getenv("DAO_URL", "http://dao-service:5000")
 
 @app.route('/product/<int:pid>', methods=['GET'])
