@@ -62,7 +62,7 @@ spec:
               isDefault: false
               jsonData:
                 derivedFields:
-                  - datasourceUid: tempo # 关联到你的 Tempo UID
+                  - datasourceUid: P214B5B846CF3925F # 关联到你的 Tempo UID
                     matcherRegex: "trace_id=(\\w+)"
                     name: TraceID
                     url: "$${__value.raw}"
