@@ -1,7 +1,7 @@
 import os
 import logging
 import requests
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s : %(message)s')
 logger = logging.getLogger("frontend-service")
@@ -30,8 +30,6 @@ def view_product(pid):
 @app.route('/', methods=['GET'])
 def index():
     return redirect('/api/view/1', code=302)
-
-
 
 @app.route('/health', methods=['GET'])
 def health():
