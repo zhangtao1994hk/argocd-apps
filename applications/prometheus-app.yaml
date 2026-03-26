@@ -35,6 +35,11 @@ spec:
         grafana:
           enabled: true
           defaultDashboardsEnabled: true # 如果渲染报错，开启此项
+          admin:
+            existingSecret: "grafana-admin-credentials" 
+            passwordKey: "admin-password"
+      
+          adminPassword: null 
           prometheus:
             enabled: true
           sidecar:
@@ -49,9 +54,6 @@ spec:
             paths:
               - /
           # 设置密码的方式（如果用 Secret，此处不需要 adminPassword）
-          adminPassword: null # 必须设为 null，防止覆盖
-          adminPasswordKey: admin-password
-          adminPasswordVariable: grafana-admin-credentials
           additionalDataSources:
             - name: Loki
               type: loki
