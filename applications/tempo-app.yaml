@@ -15,6 +15,15 @@ spec:
       values: |
         # 1. 强制启用单节点模式
         mode: single-binary
+        service:
+          enabled: true
+          ports:
+            - name: otlp-grpc
+              port: 4317
+              targetPort: 4317
+            - name: otlp-http
+              port: 4318
+              targetPort: 4318
 
         # 2. 核心配置，指定数据存储后端
         config: |
@@ -25,7 +34,9 @@ spec:
               otlp:
                 protocols:
                   grpc:
+                    endpoint: 0.0.0.0:4317
                   http:
+                    endpoint: 0.0.0.0:4318
           storage:
             trace:
               backend: local
