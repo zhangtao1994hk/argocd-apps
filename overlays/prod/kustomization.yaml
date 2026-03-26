@@ -4,12 +4,9 @@ kind: Kustomization
 resources:
 - ../../base
 images:
-- name: backend-image
-  newName: ghcr.io/zhangtao1994hk/argocd-apps/backend
+- name: ghcr.io/zhangtao1994hk/argocd-apps/backend
   newTag: 440d7b7eb6d0e5a36cd774a36ebefc1b8c7209c2
-- name: dao-image
-  newName: ghcr.io/zhangtao1994hk/argocd-apps/dao
+- name: ghcr.io/zhangtao1994hk/argocd-apps/dao
   newTag: 2f7e62a17c9aebf90b9289064e21d489f27aad83
-- name: frontend-image
-  newName: ghcr.io/zhangtao1994hk/argocd-apps/frontend
+- name: ghcr.io/zhangtao1994hk/argocd-apps/frontend
   newTag: 531b7963036925b2e1d3d47bdaab86c63f376dc4

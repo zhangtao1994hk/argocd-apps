@@ -48,9 +48,9 @@ jobs:
         run: |
           # 【修改点4】替换 frontend-deploy.yaml 中的镜像
           #sed -i "s|image: ghcr.io/${{ github.repository }}/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" manifests/frontend-deploy.yaml
-          cd overlays/prod
-          kustomize edit set image frontend-image=ghcr.io/zhangtao1994hk/argocd-apps/frontend:${{ github.sha }}
-      
+          cd overlays/prod    
+          kustomize edit set image ghcr.io/zhangtao1994hk/argocd-apps/frontend=ghcr.io/zhangtao1994hk/argocd-apps/frontend:${{ github.sha }}
+
  
       - name: Commit and Push changes
         run: |
