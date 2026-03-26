@@ -4,6 +4,7 @@ import requests
 from flask import Flask, jsonify
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s : %(message)s')
+
 logger = logging.getLogger("backend-service")
 
 app = Flask(__name__)
