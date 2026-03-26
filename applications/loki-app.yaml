@@ -1,44 +1,44 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
-
 metadata:
   name: loki-app
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://grafana-community.github.io/helm-charts
+    repoURL: https://grafana.github.io/helm-charts
     chart: loki
-    targetRevision: 6.57.0
+    targetRevision: 6.55.0 # 你指定的版本
     helm:
-      valueFiles:
-        - values.yaml
       values: |
+        # 1. 禁用多租户 (解决你的 401 错误)
         loki:
-          useTestSchema: true
-          common:
-            storage:
-              backend: filesystem
+          auth_enabled: false
+        
+        # 2. 部署模式
+        deploymentMode: SingleBinary
+        
+        # 3. 单节点副本设置
+        singleBinary:
+          replicas: 1
+        
+        # 4. 存储配置 (使用本地文件系统)
+        loki:
+          commonConfig:
+            replication_factor: 1
           storage:
-            bucketNames:
-              chunks: chunks
-              ruler: ruler
-              admin: admin
-          singleBinary:
-            persistence:
-              enabled: true
-              size: 10Gi
-          read:
-            replicas: 1
-          write:
-            replicas: 1
-          backend:
-            replicas: 1
-          monitoring:
-            serviceMonitor:
-              enabled: false
-            selfMonitoring:
-              enabled: false
+            type: filesystem
+        
+        # 5. 禁用不必要的网关和读取器（单节点模式下）
+        gateway:
+          enabled: false
+        write:
+          replicas: 0
+        read:
+          replicas: 0
+        backend:
+          replicas: 0
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -49,4 +49,3 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-      - Replace=true
