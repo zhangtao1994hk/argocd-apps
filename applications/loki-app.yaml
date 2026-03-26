@@ -6,47 +6,48 @@ metadata:
 spec:
   project: default
   source:
+    # 这里的 repoURL 指向 Grafana 官方 Helm 仓库
     repoURL: https://grafana.github.io/helm-charts
     chart: loki
-    targetRevision: 6.55.0 # 你指定的版本
+    targetRevision: 6.55.0
     helm:
+      # 你直接在这里通过 values 字段写配置，或者指向 Git 中的路径
+      # 如果想直接用 Git 中的文件，请参考上面的多源配置。
+      # 但为了快速成功，我建议直接把 values 贴在这里：
       values: |
-        # 1. 禁用多租户 (解决你的 401 错误)
-        loki:
-          useTestSchema: true
-          auth_enabled: false
-        
-        # 2. 部署模式
         deploymentMode: SingleBinary
-        
-        # 3. 单节点副本设置
-        singleBinary:
-          replicas: 1
-        
-        # 4. 存储配置 (使用本地文件系统)
         loki:
+          auth_enabled: false
           commonConfig:
             replication_factor: 1
           storage:
             type: filesystem
-        
-        # 5. 禁用不必要的网关和读取器（单节点模式下）
-        gateway:
-          enabled: false
+          schemaConfig:
+            configs:
+              - from: 2024-01-01
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: loki_index_
+                  period: 24h
+        backend:
+          replicas: 0
         write:
           replicas: 0
         read:
           replicas: 0
-        backend:
-          replicas: 0
-
+        gateway:
+          enabled: false
+        singleBinary:
+          replicas: 1
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
     automated:
-      selfHeal: true
       prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
