@@ -18,8 +18,11 @@ spec:
       values: |
         # 关闭默认不需要的组件
         alertmanager:
-          enabled: false
-        
+          enabled: true
+        nodeExporter:
+          enabled: true
+        kubeStateMetrics:
+          enabled: true 
         # 保持 Prometheus 开启
         prometheus:
           enabled: true
