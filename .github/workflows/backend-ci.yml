@@ -64,7 +64,7 @@ jobs:
           
           # 只提交修改过的那个 yaml 文件
           # git add manifests/backend-deploy.yaml
-          git add kustomization.yaml
+          git add overlays/prod/kustomization.yaml
           # 提交并推送到 GitHub
           git commit -m "chore(backend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
           git pull --rebase origin main
