@@ -1,8 +1,13 @@
 grafana:
   enabled: true
-  adminPassword: "admin" # 生产环境记得改成更复杂的
+  adminPassword: "admin"
   ingress:
     enabled: false # 先关掉 Ingress，测试通了再开
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki:3100 
+      access: proxy
 
 prometheus:
   prometheusSpec:
