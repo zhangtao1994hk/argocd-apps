@@ -16,7 +16,6 @@ def get_product(pid):
     logger.info(f"Backend processing request for product {pid}")
     
     try:
-        # 调用 DAO 服务
         response = requests.get(f"{DAO_URL}/product/{pid}", timeout=5)
         
         if response.status_code == 200:
