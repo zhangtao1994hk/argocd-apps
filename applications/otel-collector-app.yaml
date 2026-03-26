@@ -42,15 +42,6 @@ spec:
                 receivers: [otlp]
                 exporters: [prometheusremotewrite]
 
-        # 暴露必要的 Service 端口
-        ports:
-          otlp-grpc:
-            enabled: true
-            containerPort: 4317
-          otlp-http:
-            enabled: true
-            containerPort: 4318
-
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
