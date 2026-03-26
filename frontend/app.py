@@ -27,6 +27,12 @@ def view_product(pid):
         logger.error(f"Frontend: Critical failure, backend unreachable: {str(e)}")
         return jsonify({"error": "Gateway Error"}), 502
 
+@app.route('/', methods=['GET'])
+def index():
+    return redirect('/api/view/1', code=302)
+
+
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "UP"}), 200
