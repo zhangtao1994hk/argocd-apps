@@ -56,8 +56,7 @@ spec:
                 - url: http://prometheus-kube-prometheus-stack-prometheus:9090/api/v1/write # 自动发送指标到 Prometheus
             # 开启 Service Graph 生成
             processor:
-              service_graphs:
-                enabled: true
+              service_graphs: {}
         
         # 3. 禁用多节点下的其他组件
         ingester:
