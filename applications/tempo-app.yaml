@@ -1,0 +1,70 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tempo-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: tempo
+    targetRevision: 1.24.4 # 请根据官网检查最新稳定版
+    helm:
+      values: |
+        # 1. 强制启用单节点模式
+        mode: single-binary
+
+        # 2. 核心配置，指定数据存储后端
+        config: |
+          server:
+            http_listen_port: 3200
+          distributor:
+            receivers:
+              otlp:
+                protocols:
+                  grpc:
+                  http:
+          storage:
+            trace:
+              backend: local
+              local:
+                path: /var/tempo/traces
+          compactor:
+            compaction:
+              block_retention: 1h
+          metrics_generator:
+            registry:
+              external_labels:
+                source: tempo
+            storage:
+              path: /var/tempo/generator/wal
+              remote_write:
+                - url: http://prometheus-kube-prometheus-stack-prometheus:9090/api/v1/write # 自动发送指标到 Prometheus
+        
+        # 3. 禁用多节点下的其他组件
+        ingester:
+          replicas: 0
+        querier:
+          replicas: 0
+        queryFrontend:
+          replicas: 0
+        distributor:
+          replicas: 0
+        compactor:
+          replicas: 0
+        memcached:
+          enabled: false
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
