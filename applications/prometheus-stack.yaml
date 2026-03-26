@@ -14,6 +14,16 @@ spec:
       values: |
         crds:
           enabled: false
+        prometheus-node-exporter:
+          enabled: false
+        kube-state-metrics:
+          enabled: false
+        grafana:
+          enabled: false
+        alertmanager:
+          enabled: false
+        prometheus:
+          enabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
