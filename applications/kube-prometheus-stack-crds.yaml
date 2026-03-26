@@ -13,6 +13,8 @@ spec:
     helm:
       #includeCRDs: true
       values: |
+        crds:
+          enabled: true
         alertmanager:
           enabled: false
         grafana:

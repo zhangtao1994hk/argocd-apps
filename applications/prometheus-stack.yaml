@@ -15,13 +15,13 @@ spec:
         crds:
           enabled: false
         nodeExporter:
-          enabled: false
+          enabled: true
         kubeStateMetrics:
-          enabled: false
+          enabled: true
         grafana:
-          enabled: false
+          enabled: true
         alertmanager:
-          enabled: false
+          enabled: true
         prometheus:
           enabled: true
   destination:
