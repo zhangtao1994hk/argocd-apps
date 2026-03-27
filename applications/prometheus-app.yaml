@@ -8,77 +8,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    chart: kube-prometheus-stack
-    targetRevision: 82.14.1
+    repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git'
+    path: prometheus
+    targetRevision: HEAD
     helm:
-      # 1. 自动安装 CRDs，这是合并方案的核心
-      #includeCRDs: true
-      # 2. 集中化的配置
-      values: |
-        # 关闭默认不需要的组件
-        crds:
-          enabled: true
-        alertmanager:
-          enabled: true
-        nodeExporter:
-          enabled: true
-        kubeStateMetrics:
-          enabled: true 
-        # 保持 Prometheus 开启
-        prometheus:
-          enabled: true
-          prometheusSpec:
-            remoteWriteDashboards: false # 防止 nil pointer 错误
-            
-        # 开启 Grafana 及 Ingress
-        grafana:
-          enabled: true
-          defaultDashboardsEnabled: true # 如果渲染报错，开启此项
-          admin:
-            existingSecret: "grafana-admin-credentials" 
-            passwordKey: "admin-password"
-      
-          adminPassword: null 
-          prometheus:
-            enabled: true
-          sidecar:
-            dashboards:
-              enabled: true
-              searchNamespace: ALL
-          ingress:
-            enabled: true
-            ingressClassName: traefik
-            hosts:
-              - grafana.local
-            paths:
-              - /
-          # 设置密码的方式（如果用 Secret，此处不需要 adminPassword）
-          additionalDataSources:
-            - name: Loki
-              type: loki
-              url: http://loki-app:3100 # 确保这是你 Loki 的 Service 名称
-              access: proxy
-              isDefault: false
-              jsonData:
-                derivedFields:
-                  - datasourceUid: P214B5B846CF3925F
-                    matcherRegex: "trace_id=(\\w+)"
-                    name: TraceID
-                    url: "$${__value.raw}"
-
-            - name: Tempo
-              type: tempo
-              url: http://tempo-app:3200
-              access: proxy
-              jsonData:
-                httpMethod: GET
-                serviceMap:
-                  datasourceUid: prometheus # 指向你的 Prometheus 数据源 UID
-                nodeGraph:
-                  enabled: true
-              isDefault: false
-
+      valueFiles:
+        - prometheus-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
