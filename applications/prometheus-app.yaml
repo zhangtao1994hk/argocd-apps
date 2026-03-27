@@ -8,13 +8,15 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    chart: kube-prometheus-stack
-    targetRevision: 82.14.1
+    repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git' 
+    path: .
     helm:
       valueFiles:
         - prometheus-values.yaml
-
+      releaseName: kube-prometheus-stack
+      chart: kube-prometheus-stack
+      helmRepoURL: https://prometheus-community.github.io/helm-charts
+      targetRevision: 82.14.1
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
