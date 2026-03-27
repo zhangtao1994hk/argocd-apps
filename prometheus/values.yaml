@@ -1,0 +1,91 @@
+crds:
+  enabled: true
+alertmanager:
+  enabled: true
+nodeExporter:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+# 保持 Prometheus 开启
+prometheus:
+  enabled: true
+  prometheusSpec:
+    remoteWriteDashboards: false # 防止 nil pointer 错误
+
+# 开启 Grafana 及 Ingress
+grafana:
+  enabled: true
+  defaultDashboardsEnabled: true # 如果渲染报错，开启此项
+  admin:
+    existingSecret: "grafana-admin-credentials"
+    passwordKey: "admin-password"
+
+  adminPassword: null
+  prometheus:
+    enabled: true
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - grafana.local
+    paths:
+      - /
+  # 设置密码的方式（如果用 Secret，此处不需要 adminPassword）
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki-app:3100 # 确保这是你 Loki 的 Service 名称
+      access: proxy
+      isDefault: false
+      jsonData:
+        derivedFields:
+          - datasourceUid: P214B5B846CF3925F
+            matcherRegex: "trace_id=(\\w+)"
+            name: TraceID
+            url: "$${__value.raw}"
+
+    - name: Tempo
+      type: tempo
+      url: http://tempo-app:3200
+      access: proxy
+      jsonData:
+        httpMethod: GET
+        serviceMap:
+          datasourceUid: prometheus # 指向你的 Prometheus 数据源 UID
+        nodeGraph:
+          enabled: true
+      isDefault: false
+
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      receiver: 'feishu' # 先设置为 null 防止报错，后续改为你的接收器名
+    receivers:
+    - name: 'feishu'
+      webhook_configs:
+      - url: 'http://10.128.0.2:8080' # 替换为你的报警接收地址
+
+# 自定义告警规则
+additionalPrometheusRulesMap:
+  argocd-rules:
+    groups:
+    - name: argocd-alerts
+      rules:
+      - alert: ArgoCDSyncFailed
+        expr: rate(argocd_app_sync_total{status="Failed"}[5m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ArgoCD Application Sync Failed"
+          description: "Sync failed for {{ $labels.name }}"
