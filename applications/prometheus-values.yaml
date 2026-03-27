@@ -1,5 +1,5 @@
-crds:
-  enabled: true
+#crds:
+#  enabled: true
 alertmanager:
   enabled: true
 nodeExporter:
