@@ -19,7 +19,7 @@ grafana:
   dashboards:
     default:
       argocd-overview:
-        gnetId: 14584
+        gnetId: 19993
         revision: 1
         datasource: prometheus
   admin:
