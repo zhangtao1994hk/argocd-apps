@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kube-prometheus-stack
+  name: argo-rollouts
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -9,11 +9,11 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git'
-    path: prometheus/kube-prometheus-stack
+    path: argo-rollouts
     targetRevision: HEAD
     helm:
       valueFiles:
-        - prometheus-values.yaml
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -26,18 +26,3 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true # 关键：使用 SSA 避免 Annotation 超限
   
-  # 3. 终极防漂移配置：彻底消除 OutOfSync
-  ignoreDifferences:
-    - group: "*"
-      kind: "*"
-      jsonPointers:
-        - /metadata/managedFields
-    - group: "apiextensions.k8s.io"
-      kind: "CustomResourceDefinition"
-      jsonPointers:
-        - /metadata/annotations
-        - /status
-    - group: "monitoring.coreos.com"
-      kind: "Prometheus"
-      jsonPointers:
-        - /status
