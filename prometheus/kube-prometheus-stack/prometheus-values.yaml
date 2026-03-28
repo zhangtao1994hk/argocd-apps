@@ -16,6 +16,12 @@ prometheus:
 grafana:
   enabled: true
   defaultDashboardsEnabled: true # 如果渲染报错，开启此项
+  dashboards:
+    default:
+      argocd-overview:
+        gnetId: 14584
+        revision: 1
+        datasource: prometheus
   admin:
     existingSecret: "grafana-admin-credentials"
     passwordKey: "admin-password"
