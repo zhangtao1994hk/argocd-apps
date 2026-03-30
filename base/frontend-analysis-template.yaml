@@ -1,0 +1,21 @@
+# base/frontend-analysis-template.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: frontend-success-rate
+spec:
+  metrics:
+    - name: success-rate
+      interval: 30s
+      # 成功率低于 95% 则计一次失败
+      successCondition: result[0] >= 0.95
+      # 连续失败 3 次自动回滚
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc:9090
+          query: |
+            sum(rate(http_server_duration_milliseconds_count{job="monitoring/frontend-service", http_target!="/health, "http_status_code!~"5.."}[2m]))
+            /
+            sum(rate(http_server_duration_milliseconds_count{job="monitoring/frontend-service",http_target!="/health"}[2m])) or vector(1)
+
