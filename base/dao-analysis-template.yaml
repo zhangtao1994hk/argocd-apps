@@ -14,7 +14,7 @@ spec:
         prometheus:
           address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc:9090
           query: |
-            ( sum(rate(http_server_duration_milliseconds_count{job="dao", http_target!="/health", http_status_code!~"5.."}[2m]))
+            ( sum(rate(http_server_duration_milliseconds_count{job="monitoring/dao-service", http_target!="/health", http_status_code!~"5.."}[2m]))
             /
-            sum(rate(http_server_duration_milliseconds_count{job="dao",http_target!="/health"}[2m])) ) or vector(1)
+            sum(rate(http_server_duration_milliseconds_count{job="monitoring/dao-service",http_target!="/health"}[2m])) ) or vector(1)
 
