@@ -50,7 +50,7 @@ grafana:
       isDefault: false
       jsonData:
         derivedFields:
-          - datasourceUid: P214B5B846CF3925F
+          - datasourceUid: Tempo
             matcherRegex: "trace_id=(\\w+)"
             name: TraceID
             url: "$${__value.raw}"
