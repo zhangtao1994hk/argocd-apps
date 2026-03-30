@@ -11,3 +11,5 @@ configMapGenerator:
     files:
       - lgtm-dashboard.json
       - node-exporter-full.json
+      - argocd-dashboard.json
+      - k8s-global-view.json
