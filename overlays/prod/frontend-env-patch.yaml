@@ -9,4 +9,4 @@ spec:
         - name: frontend
           env:
             - name: APP_VERSION
-              value: "placeholder"   # 每次发布由 CI 自动替换这里的值
+              value: "58c8b1a59e0d33dcc6c4cd046dc57d225016da62"   # 每次发布由 CI 自动替换这里的值
