@@ -7,6 +7,7 @@ resources:
   - frontend-rollout.yaml
   - frontend-service.yaml
   - frontend-ingress.yaml
+  - frontend-analysis-template.yaml
   - hpa.yaml
 
 images:
