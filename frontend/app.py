@@ -29,7 +29,6 @@ def view_product(pid):
         logger.error(f"Frontend: Critical failure, backend unreachable: {str(e)}")
         return jsonify({"error": "Gateway Error"}), 502
 
-# add welcome
 @app.route('/welcome', methods=['GET'])
 def welcome():
     logger.info("Frontend: Welcome endpoint called")
