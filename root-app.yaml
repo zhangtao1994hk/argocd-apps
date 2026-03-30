@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+  # 删除根 App 时，级联删除所有子 App
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/zhangtao1994hk/argocd-apps.git
+    targetRevision: main
+    path: applications        # 指向存放所有子 Application yaml 的目录
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd         # 子 Application 资源本身部署在 argocd 命名空间
+  syncPolicy:
+    automated:
+      prune: true             # 自动删除 Git 中已移除的子 App
+      selfHeal: true          # 自动修复手动改动导致的漂移
+    syncOptions:
+      - CreateNamespace=true
