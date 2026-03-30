@@ -42,3 +42,10 @@ spec:
         readinessProbe: # 就绪检查，失败后 Service 会剔除该 Pod
           httpGet: {path: /health, port: 5000}
           initialDelaySeconds: 2
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20       # 第一步：切 20% 的流量给新版本
+      - pause: {}           # 第二步：永久暂停（等待人工确认/Promote）
+      - setWeight: 50       # 第三步：切 50% 的流量给新版本
+      - pause: {duration: 10s}
