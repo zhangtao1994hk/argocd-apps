@@ -40,11 +40,11 @@ spec:
             # 2. 转发 Metrics 到 Prometheus
             prometheusremotewrite:
               endpoint: "http://prometheus-kube-prometheus-stack-prometheus:9090/api/v1/write"
-              sending_queue:
+              timeout: 30s
+              queue:
                 enabled: true
                 num_consumers: 10      # 默认是5，加倍消费速度
                 queue_size: 5000 
- 
               retry_on_failure:
                 enabled: true
                 initial_interval: 5s
