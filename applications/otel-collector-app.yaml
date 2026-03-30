@@ -41,6 +41,7 @@ spec:
             prometheusremotewrite:
               endpoint: "http://kube-prometheus-stack-prometheus:9090/api/v1/write"
               timeout: 30s
+              max_batch_request_parallelism: 10 
               remote_write_queue:
                 enabled: true
                 num_consumers: 10      # 默认是5，加倍消费速度

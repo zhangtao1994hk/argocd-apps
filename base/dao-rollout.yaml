@@ -5,8 +5,8 @@ spec:
   selector: {app: dao}
   ports: [{port: 5000}]
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata: {name: dao}
 spec:
   selector: {matchLabels: {app: dao}}
@@ -16,7 +16,6 @@ spec:
       containers:
       - name: dao
         image: ghcr.io/zhangtao1994hk/argocd-apps/dao:latest
-        #image: dao-image
         command: ["opentelemetry-instrument"]
         args: ["python", "app.py"]
         env:
@@ -45,3 +44,11 @@ spec:
         readinessProbe: # 就绪检查，失败后 Service 会剔除该 Pod
           httpGet: {path: /health, port: 5000}
           initialDelaySeconds: 2
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: {duration: 30s}
+        - setWeight: 50
+        - pause: {duration: 30s}
+        - setWeight: 100
