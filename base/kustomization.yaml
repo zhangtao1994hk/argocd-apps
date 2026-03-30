@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - backend-rollout.yaml
+  - backend-analysis-template.yaml    
   - dao-rollout.yaml
   - frontend-rollout.yaml
   - frontend-service.yaml
