@@ -39,7 +39,7 @@ spec:
             
             # 2. 转发 Metrics 到 Prometheus
             prometheusremotewrite:
-              endpoint: "http://prometheus-kube-prometheus-stack-prometheus:9090/api/v1/write"
+              endpoint: "http://kube-prometheus-stack-prometheus:9090/api/v1/write"
               timeout: 30s
               remote_write_queue:
                 enabled: true
@@ -60,9 +60,13 @@ spec:
                 processors: [batch]
                 exporters: [otlp/tempo]
               metrics:
-                receivers: [otlp]
+                receivers: [otlp,prometheus]
                 processors: [batch]
                 exporters: [prometheusremotewrite]
+              logs:
+                receivers: [otlp]
+                processors: [memory_limiter, batch]
+                exporters: [debug]
 
   destination:
     server: https://kubernetes.default.svc
