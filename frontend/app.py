@@ -10,6 +10,8 @@ app = Flask(__name__)
 
 # K3s Service DNS: 假设 Service 名字叫 backend-service
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend-service:5000")
+# 版本号通过环境变量注入，金丝雀发布时可区分 stable/canary
+APP_VERSION = os.getenv("APP_VERSION", "v1.0.0")
 
 @app.route('/api/view/<int:pid>', methods=['GET'])
 def view_product(pid):
@@ -26,6 +28,16 @@ def view_product(pid):
     except Exception as e:
         logger.error(f"Frontend: Critical failure, backend unreachable: {str(e)}")
         return jsonify({"error": "Gateway Error"}), 502
+
+
+@app.route('/welcome', methods=['GET'])
+def welcome():
+    logger.info("Frontend: Welcome endpoint called")
+    return jsonify({
+        "message": "Welcome to the Frontend Service!",
+        "version": APP_VERSION,
+        "status": "ok"
+    }), 200
 
 @app.route('/', methods=['GET'])
 def index():

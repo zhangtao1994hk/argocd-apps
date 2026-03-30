@@ -44,12 +44,13 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      - name: Update frontend image tag in K8s manifest
+      - name: Update frontend image tag via kustomize
         run: |
           # 【修改点4】替换 frontend-deploy.yaml 中的镜像
           #sed -i "s|image: ghcr.io/${{ github.repository }}/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" manifests/frontend-deploy.yaml
           cd overlays/prod    
           kustomize edit set image ghcr.io/zhangtao1994hk/argocd-apps/frontend=ghcr.io/zhangtao1994hk/argocd-apps/frontend:${{ github.sha }}
+          sed -i "s|value: \".*\"  # 由 CI 自动替换|value: \"${{ github.sha }}\"  # 由 CI 自动替换|g" frontend-env-patch.yaml
 
  
       - name: Commit and Push changes
@@ -58,7 +59,8 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
           #git add manifests/frontend-deploy.yaml
-          git add overlays/prod/kustomization.yaml
+          git add overlays/prod/kustomization.yaml overlays/prod/frontend-env-patch.yaml
+          
 
           git commit -m "chore(frontend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
           

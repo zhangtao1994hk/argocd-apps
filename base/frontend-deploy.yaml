@@ -27,6 +27,7 @@ spec:
           value: "otlp"
         - name: OTEL_METRIC_EXPORT_INTERVAL
           value: "15000"
+
         resources:
           requests:
             cpu: "100m"      # 基准需求：0.1个CPU核（HPA算百分比的分母）
