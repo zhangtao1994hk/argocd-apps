@@ -11,6 +11,7 @@ prometheus:
   enabled: true
   prometheusSpec:
     remoteWriteDashboards: false # 防止 nil pointer 错误
+    enableRemoteWriteReceiver: true
 
 # 开启 Grafana 及 Ingress
 grafana:
