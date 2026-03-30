@@ -1,0 +1,12 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: frontend
+          env:
+            - name: APP_VERSION
+              value: "placeholder"   # 每次发布由 CI 自动替换这里的值
