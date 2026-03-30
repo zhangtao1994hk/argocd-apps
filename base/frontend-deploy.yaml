@@ -13,52 +13,52 @@ spec:
         app: frontend
     spec:
       containers:
-      - name: frontend
-        image: ghcr.io/zhangtao1994hk/argocd-apps/frontend:latest
-        command: ["opentelemetry-instrument"]
-        args: ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
-        env:
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
-        - name: OTEL_SERVICE_NAME
-          value: "frontend-service"
-        - name: OTEL_RESOURCE_ATTRIBUTES
-          value: "service.name=frontend-service,service.namespace=monitoring"
-        - name: OTEL_PYTHON_LOG_CORRELATION
-          value: "true"
-        - name: OTEL_EXPORTER_OTLP_PROTOCOL
-          value: "grpc"
-        - name: OTEL_METRIC_EXPORTER
-          value: "otlp"
-        - name: OTEL_METRIC_EXPORT_INTERVAL
-          value: "15000"
-        - name: APP_VERSION
-          value: "placeholder"
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
-            cpu: "500m"
-            memory: "256Mi"
-        ports:
-        - containerPort: 5000
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 2
+        - name: frontend
+          image: ghcr.io/zhangtao1994hk/argocd-apps/frontend:latest
+          command: ["opentelemetry-instrument"]
+          args: ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "frontend-service"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=frontend-service,service.namespace=monitoring"
+            - name: OTEL_PYTHON_LOG_CORRELATION
+              value: "true"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+            - name: OTEL_METRIC_EXPORTER
+              value: "otlp"
+            - name: OTEL_METRIC_EXPORT_INTERVAL
+              value: "15000"
+            - name: APP_VERSION
+              value: "68862a3a61c886d0dd0e09fbb6692a944975c3ff"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 2
   strategy:
     canary:
       steps:
-      - setWeight: 20
-      - pause: {}
-      - setWeight: 50
-      - pause:
-          duration: 10s
+        - setWeight: 20
+        - pause: {}
+        - setWeight: 50
+        - pause:
+            duration: 10s
