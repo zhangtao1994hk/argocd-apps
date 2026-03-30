@@ -9,7 +9,8 @@ images:
 - name: ghcr.io/zhangtao1994hk/argocd-apps/dao
   newTag: 2f7e62a17c9aebf90b9289064e21d489f27aad83
 - name: ghcr.io/zhangtao1994hk/argocd-apps/frontend
-  newTag: 7df2b29e27c4b7567be4aa5e3df162be7e6744c9
+  newName: ghcr.io/zhangtao1994hk/argocd-apps/frontend
+  newTag: 785a0d8c890d52ddcfbea3f5730b8e9d04c2894e
 
 patches:
-  - path: frontend-env-patch.yaml
+- path: frontend-env-patch.yaml
