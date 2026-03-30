@@ -48,7 +48,13 @@ spec:
     canary:
       steps:
         - setWeight: 20
-        - pause: {duration: 30s}
+        - pause: {duration: 60s}
+        - analysis:
+            templates:
+              - templateName: backend-success-rate
         - setWeight: 50
-        - pause: {duration: 30s}
+        - pause: {duration: 60s}
+        - analysis:
+            templates:
+              - templateName: backend-success-rate
         - setWeight: 100
