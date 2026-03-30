@@ -1,7 +1,5 @@
 crds:
   enabled: true
-alertmanager:
-  enabled: true
 nodeExporter:
   enabled: true
 kubeStateMetrics:
@@ -17,6 +15,9 @@ prometheus:
 grafana:
   enabled: true
   defaultDashboardsEnabled: true # 如果渲染报错，开启此项
+  persistence:
+    enabled: true
+    size: 5Gi
   dashboards:
     default:
       argocd-overview:
@@ -27,9 +28,6 @@ grafana:
     existingSecret: "grafana-admin-credentials"
     passwordKey: "admin-password"
 
-  adminPassword: null
-  prometheus:
-    enabled: true
   sidecar:
     dashboards:
       enabled: true
@@ -54,6 +52,7 @@ grafana:
             matcherRegex: "trace_id=(\\w+)"
             name: TraceID
             url: "$${__value.raw}"
+            datasourceUid: ""
 
     - name: Tempo
       type: tempo
@@ -62,12 +61,13 @@ grafana:
       jsonData:
         httpMethod: GET
         serviceMap:
-          datasourceUid: prometheus # 指向你的 Prometheus 数据源 UID
+          datasourceUid: prometheus  # kube-prometheus-stack 默认 Prometheus UID
         nodeGraph:
           enabled: true
       isDefault: false
 
 alertmanager:
+  enabled: true
   config:
     global:
       resolve_timeout: 5m
@@ -96,3 +96,19 @@ additionalPrometheusRulesMap:
         annotations:
           summary: "ArgoCD Application Sync Failed"
           description: "Sync failed for {{ $labels.name }}"
+
+      - alert: ArgoCDAppOutOfSync
+        expr: argocd_app_info{sync_status="OutOfSync"} == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ArgoCD App OutOfSync: {{ $labels.name }}"
+
+      - alert: ArgoCDAppUnhealthy
+        expr: argocd_app_info{health_status!="Healthy"} == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ArgoCD App Unhealthy: {{ $labels.name }}"
