@@ -1,16 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
-metadata: {name: frontend}
+metadata:
+  name: frontend
 spec:
   replicas: 2
-  selector: {matchLabels: {app: frontend}}
+  selector:
+    matchLabels:
+      app: frontend
   template:
-    metadata: {labels: {app: frontend}}
+    metadata:
+      labels:
+        app: frontend
     spec:
       containers:
       - name: frontend
         image: ghcr.io/zhangtao1994hk/argocd-apps/frontend:latest
-        #image: frontend-image 
         command: ["opentelemetry-instrument"]
         args: ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
         env:
@@ -29,27 +33,32 @@ spec:
         - name: OTEL_METRIC_EXPORT_INTERVAL
           value: "15000"
         - name: APP_VERSION
-          value: "946b3e96d8879c3c282e7f9c13725ea8cc83eccc" 
-
+          value: "placeholder"
         resources:
           requests:
-            cpu: "100m"      # 基准需求：0.1个CPU核（HPA算百分比的分母）
-            memory: "128Mi"  # 基础内存需求
+            cpu: "100m"
+            memory: "128Mi"
           limits:
-            cpu: "500m"      # 最大限制：0.5个CPU核（防止一个Pod把整台机器跑死）
-            memory: "256Mi"  # 最大内存限制
-        ports: [{containerPort: 5000}]
-        livenessProbe:  # 存活检查，失败会重启容器
-          httpGet: {path: /health, port: 5000}
+            cpu: "500m"
+            memory: "256Mi"
+        ports:
+        - containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
           initialDelaySeconds: 5
           periodSeconds: 5
-        readinessProbe: # 就绪检查，失败后 Service 会剔除该 Pod
-          httpGet: {path: /health, port: 5000}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
           initialDelaySeconds: 2
   strategy:
     canary:
       steps:
-      - setWeight: 20       # 第一步：切 20% 的流量给新版本
-      - pause: {}           # 第二步：永久暂停（等待人工确认/Promote）
-      - setWeight: 50       # 第三步：切 50% 的流量给新版本
-      - pause: {duration: 10s}
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 50
+      - pause:
+          duration: 10s

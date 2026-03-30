@@ -50,7 +50,9 @@ jobs:
           #sed -i "s|image: ghcr.io/${{ github.repository }}/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" manifests/frontend-deploy.yaml
           cd overlays/prod    
           kustomize edit set image ghcr.io/zhangtao1994hk/argocd-apps/frontend=ghcr.io/zhangtao1994hk/argocd-apps/frontend:${{ github.sha }}
-          sed -i 's|value: "placeholder"|value: "${{ github.sha }}"|g' ../../base/frontend-deploy.yaml
+          yq e '
+      (.spec.template.spec.containers[] | select(.name == "frontend") | .env[] | select(.name == "APP_VERSION") | .value) = "${{ github.sha }}"
+    ' -i ../../base/frontend-deploy.yaml
  
       - name: Commit and Push changes
         run: |
