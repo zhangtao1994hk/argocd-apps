@@ -28,6 +28,8 @@ spec:
           value: "otlp"
         - name: OTEL_METRIC_EXPORT_INTERVAL
           value: "15000"
+        - name: APP_VERSION
+              value: "placeholder" 
 
         resources:
           requests:

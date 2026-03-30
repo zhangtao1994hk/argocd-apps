@@ -12,5 +12,3 @@ images:
   newName: ghcr.io/zhangtao1994hk/argocd-apps/frontend
   newTag: 58c8b1a59e0d33dcc6c4cd046dc57d225016da62
 
-patches:
-- path: frontend-env-patch.yaml

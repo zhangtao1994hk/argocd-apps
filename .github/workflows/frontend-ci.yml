@@ -50,8 +50,7 @@ jobs:
           #sed -i "s|image: ghcr.io/${{ github.repository }}/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" manifests/frontend-deploy.yaml
           cd overlays/prod    
           kustomize edit set image ghcr.io/zhangtao1994hk/argocd-apps/frontend=ghcr.io/zhangtao1994hk/argocd-apps/frontend:${{ github.sha }}
-          sed -i 's|value: "placeholder"|value: "${{ github.sha }}"|g' frontend-env-patch.yaml
-
+          sed -i 's|value: "placeholder"|value: "${{ github.sha }}"|g' ../../base/frontend-deploy.yaml
  
       - name: Commit and Push changes
         run: |
@@ -59,7 +58,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
           #git add manifests/frontend-deploy.yaml
-          git add overlays/prod/kustomization.yaml overlays/prod/frontend-env-patch.yaml
+          git add overlays/prod/kustomization.yaml  base/frontend-deploy.yaml
           
 
           git commit -m "chore(frontend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
