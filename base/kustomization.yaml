@@ -5,6 +5,7 @@ resources:
   - backend-rollout.yaml
   - backend-analysis-template.yaml    
   - dao-rollout.yaml
+  - dao-analysis-template.yaml 
   - frontend-rollout.yaml
   - frontend-service.yaml
   - frontend-ingress.yaml
