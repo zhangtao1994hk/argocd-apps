@@ -37,7 +37,7 @@ def welcome():
         "message": "Welcome to the Frontend Service!",
         "version": APP_VERSION,
         "status": "ok"
-    }), 503
+    }), 200
 
 @app.route('/error-test')
 def error_test():
