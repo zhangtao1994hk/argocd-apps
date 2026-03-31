@@ -33,7 +33,7 @@ spec:
           exporters:
             # 1. 转发 Trace 到 Tempo
             otlp/tempo:
-              endpoint: "tempo-app:4317"
+              endpoint: "tempo-app.monitoring.svc.cluster.local:4317"
               tls:
                 insecure: true
             
