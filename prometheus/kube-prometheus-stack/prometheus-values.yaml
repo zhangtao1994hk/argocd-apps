@@ -82,7 +82,12 @@ alertmanager:
       group_interval: 5m
       repeat_interval: 1h
       receiver: 'feishu' # 先设置为 null 防止报错，后续改为你的接收器名
+      routes:
+        - matchers:
+            - alertname = "watchdog"
+          receiver: 'null'
     receivers:
+    - name: 'null'
     - name: 'feishu'
       webhook_configs:
       - url: 'http://10.128.0.2:8080/feishu' # 替换为你的报警接收地址
