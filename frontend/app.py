@@ -11,6 +11,7 @@ app = Flask(__name__)
 # K3s Service DNS: 假设 Service 名字叫 backend-service
 BACKEND_URL = os.getenv("BACKEND_URL", "http://backend-service:5000")
 
+
 APP_VERSION = os.getenv("APP_VERSION", "v1.0.0")
 
 @app.route('/api/view/<int:pid>', methods=['GET'])
