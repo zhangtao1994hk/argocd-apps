@@ -37,7 +37,7 @@ def welcome():
         "message": "Welcome to the Frontend Service!",
         "version": APP_VERSION,
         "status": "ok"
-    }), 200
+    }), 503
 
 @app.route('/', methods=['GET'])
 def index():
