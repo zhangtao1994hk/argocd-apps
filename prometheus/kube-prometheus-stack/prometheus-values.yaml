@@ -15,6 +15,13 @@ prometheus:
     ruleSelector:
       matchLabels:
         release: kube-prometheus-stack   
+    
+    alertmanagerSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    alertmanagerNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: monitoring 
 
 # 开启 Grafana 及 Ingress
 grafana:
