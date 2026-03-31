@@ -12,7 +12,7 @@ spec:
       failureLimit: 3
       provider:
         prometheus:
-          address: http://prometheus-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          address: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
           query: |
             ( sum(rate(http_server_duration_milliseconds_count{job="monitoring/backend-service", http_target!="/health", http_status_code!~"5.."}[2m]))
             /
