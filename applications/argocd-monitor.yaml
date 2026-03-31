@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/zhangtao1994hk/argocd-apps'
     targetRevision: HEAD
-    path: argocd-monitor 
+    path: infrastructure/argocd-monitor 
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd # 监控资源部署到 argocd 命名空间

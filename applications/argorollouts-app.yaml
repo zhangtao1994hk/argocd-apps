@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git'
-    path: argo-rollouts
+    path: infrastructure/argo-rollouts
     targetRevision: HEAD
     helm:
       valueFiles:

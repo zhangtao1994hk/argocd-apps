@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git'
-    path: prometheus/kube-prometheus-stack
+    path: infrastructure/kube-prometheus-stack
     targetRevision: HEAD
     helm:
       valueFiles:

@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/zhangtao1994hk/argocd-apps
     targetRevision: HEAD
-    path: prometheus/rules          # ← 指向规则目录
+    path: infrastructure/prometheus-rules          # ← 指向规则目录
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

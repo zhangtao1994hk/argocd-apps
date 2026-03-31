@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git'
     targetRevision: HEAD
-    path: grafana-dashboards
+    path: infrastructure/grafana-dashboards
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
