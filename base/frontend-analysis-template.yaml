@@ -10,7 +10,7 @@ spec:
       count: 3 
       successCondition: result[0] >= 0.95
       # 连续失败 3 次自动回滚
-      failureLimit: 3
+      failureLimit: 2
       provider:
         prometheus:
           address: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
