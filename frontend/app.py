@@ -39,6 +39,10 @@ def welcome():
         "status": "ok"
     }), 503
 
+@app.route('/error-test')
+def error_test():
+    raise Exception("Intentional 503 error for canary testing")
+
 @app.route('/', methods=['GET'])
 def index():
     return redirect('/api/view/1', code=302)
