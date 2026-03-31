@@ -20,7 +20,7 @@ spec:
             /
             node_memory_MemTotal_bytes
           )
-        ) * 100 > 20
+        ) * 100 > 80
       for: 5m
       labels:
         severity: warning
