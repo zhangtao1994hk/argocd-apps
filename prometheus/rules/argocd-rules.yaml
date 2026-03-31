@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: argocd-rules
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack   # ← 关键！Prometheus Operator 靠这个发现规则
+    app: kube-prometheus-stack
+spec:
+  groups:
+  - name: argocd-alerts
+    rules:
+    - alert: ArgoCDSyncFailed
+      expr: rate(argocd_app_sync_total{status="Failed"}[5m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "ArgoCD Application Sync Failed"
+        description: "Sync failed for {{ $labels.name }}"
+
+    - alert: ArgoCDAppNotHealthy
+      expr: argocd_app_info{health_status!="Healthy"} == 1
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "ArgoCD App Not Healthy"
+        description: "App {{ $labels.name }} is {{ $labels.health_status }}"

@@ -1,0 +1,20 @@
+# 示例：定义 99% 可用性 SLO
+groups:
+  - name: slo.rules
+    rules:
+      # SLI：成功率
+      - record: job:http_requests:success_rate5m
+        expr: |
+          sum(rate(http_requests_total{status!~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m]))
+
+      # 告警：SLO 燃尽
+      - alert: SLOBurnRateTooHigh
+        expr: job:http_requests:success_rate5m < 0.99
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SLO 燃尽告警：成功率低于 99%"
+

@@ -1,0 +1,63 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: infra-rules
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack   # Prometheus Operator 靠这个 label 发现规则
+    app: kube-prometheus-stack
+spec:
+  groups:
+  - name: node-memory-alerts
+    rules:
+
+    # ─── 规则1：内存使用率超过 80% ───────────────────────────────────────
+    - alert: NodeMemoryUsageHigh
+      expr: |
+        (
+          1 - (
+            node_memory_MemAvailable_bytes
+            /
+            node_memory_MemTotal_bytes
+          )
+        ) * 100 > 20
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Node {{ $labels.instance }} 内存使用率过高"
+        description: |
+          节点 {{ $labels.instance }} 内存使用率已达 {{ $value | printf "%.1f" }}%，
+          持续超过 5 分钟，请关注。
+
+    # ─── 规则2：内存使用率超过 90% ───────────────────────────────────────
+    - alert: NodeMemoryUsageCritical
+      expr: |
+        (
+          1 - (
+            node_memory_MemAvailable_bytes
+            /
+            node_memory_MemTotal_bytes
+          )
+        ) * 100 > 90
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Node {{ $labels.instance }} 内存严重不足"
+        description: |
+          节点 {{ $labels.instance }} 内存使用率已达 {{ $value | printf "%.1f" }}%，
+          持续超过 2 分钟，请立即处理！
+
+    # ─── 规则3：可用内存绝对值低于 512Mi ─────────────────────────────────
+    - alert: NodeMemoryAvailableLow
+      expr: |
+        node_memory_MemAvailable_bytes < 512 * 1024 * 1024
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Node {{ $labels.instance }} 可用内存不足 512Mi"
+        description: |
+          节点 {{ $labels.instance }} 当前可用内存仅剩
+          {{ $value | humanize1024 }}B，请检查是否有内存泄漏。

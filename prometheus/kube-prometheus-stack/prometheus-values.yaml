@@ -9,7 +9,12 @@ prometheus:
   enabled: true
   prometheusSpec:
     remoteWriteDashboards: false # 防止 nil pointer 错误
+    # scan all namespace prometheusRule
     enableRemoteWriteReceiver: true
+    ruleNamespaceSelector: {}
+    ruleSelector:
+      matchLabels:
+        release: kube-prometheus-stack   
 
 # 开启 Grafana 及 Ingress
 grafana:
@@ -80,35 +85,5 @@ alertmanager:
     receivers:
     - name: 'feishu'
       webhook_configs:
-      - url: 'http://10.128.0.2:8080' # 替换为你的报警接收地址
+      - url: 'http://10.128.0.2:8080/feishu' # 替换为你的报警接收地址
 
-# 自定义告警规则
-additionalPrometheusRulesMap:
-  argocd-rules:
-    groups:
-    - name: argocd-alerts
-      rules:
-      - alert: ArgoCDSyncFailed
-        expr: rate(argocd_app_sync_total{status="Failed"}[5m]) > 0
-        for: 5m
-        labels:
-          severity: critical
-        annotations:
-          summary: "ArgoCD Application Sync Failed"
-          description: "Sync failed for {{ $labels.name }}"
-
-      - alert: ArgoCDAppOutOfSync
-        expr: argocd_app_info{sync_status="OutOfSync"} == 1
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "ArgoCD App OutOfSync: {{ $labels.name }}"
-
-      - alert: ArgoCDAppUnhealthy
-        expr: argocd_app_info{health_status!="Healthy"} == 1
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "ArgoCD App Unhealthy: {{ $labels.name }}"
