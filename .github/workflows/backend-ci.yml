@@ -52,7 +52,6 @@ jobs:
         run: |
           # 指定更新 manifests/backend-deploy.yaml
           # 使用 sed 替换 image 字段
-          #sed -i "s|image: ghcr.io/zhangtao1994hk/argocd-apps/backend:.*|image: ghcr.io/zhangtao1994hk/argocd-apps/backend:${{ github.sha }}|g" manifests/backend-deploy.yaml
           cd overlays/prod
           kustomize edit image set ghcr.io/zhangtao1994hk/argocd-apps/backend=ghcr.io/zhangtao1994hk/argocd-apps/backend:${{ github.sha }}
 

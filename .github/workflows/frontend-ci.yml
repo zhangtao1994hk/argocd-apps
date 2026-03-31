@@ -46,19 +46,17 @@ jobs:
 
       - name: Update frontend image tag via kustomize
         run: |
-          # 【修改点4】替换 frontend-deploy.yaml 中的镜像
-          #sed -i "s|image: ghcr.io/${{ github.repository }}/frontend:.*|image: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}|g" manifests/frontend-deploy.yaml
+          # 【修改点4】替换 frontend-rollout.yaml 中的镜像
           cd overlays/prod    
           kustomize edit set image ghcr.io/zhangtao1994hk/argocd-apps/frontend=ghcr.io/zhangtao1994hk/argocd-apps/frontend:${{ github.sha }}
-          yq e '(.spec.template.spec.containers[] | select(.name == "frontend") | .env[] | select(.name == "APP_VERSION") | .value) = "${{ github.sha }}"' -i ../../base/frontend-deploy.yaml
+          yq e '(.spec.template.spec.containers[] | select(.name == "frontend") | .env[] | select(.name == "APP_VERSION") | .value) = "${{ github.sha }}"' -i ../../base/frontend-rollout.yaml
  
       - name: Commit and Push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          #git add manifests/frontend-deploy.yaml
-          git add overlays/prod/kustomization.yaml  base/frontend-deploy.yaml
+          git add overlays/prod/kustomization.yaml  base/frontend-rollout.yaml
           
 
           git commit -m "chore(frontend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
