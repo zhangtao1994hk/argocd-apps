@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: 'https://github.com/zhangtao1994hk/argocd-apps.git' 
-    path: overlays/prod
+    path: overlays/k3s
     targetRevision: HEAD
   destination:
     server: 'https://kubernetes.default.svc'

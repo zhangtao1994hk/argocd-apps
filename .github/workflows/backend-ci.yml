@@ -50,9 +50,7 @@ jobs:
 
       - name: Update backend image tag via Kustomize
         run: |
-          # 指定更新 manifests/backend-deploy.yaml
-          # 使用 sed 替换 image 字段
-          cd overlays/prod
+          cd overlays/k3s
           kustomize edit image set ghcr.io/zhangtao1994hk/argocd-apps/backend=ghcr.io/zhangtao1994hk/argocd-apps/backend:${{ github.sha }}
 
 
@@ -62,8 +60,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           
           # 只提交修改过的那个 yaml 文件
-          # git add manifests/backend-deploy.yaml
-          git add overlays/prod/kustomization.yaml
+          git add overlays/k3s/kustomization.yaml
           # 提交并推送到 GitHub
           git commit -m "chore(backend): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
           git pull --rebase origin main

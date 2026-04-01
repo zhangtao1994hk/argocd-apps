@@ -48,7 +48,7 @@ jobs:
         run: |
           # 【修改点4】替换 dao-deploy.yaml 中的镜像
           # sed -i "s|image: ghcr.io/${{ github.repository }}/dao:.*|image: ghcr.io/${{ github.repository }}/dao:${{ github.sha }}|g" manifests/dao-deploy.yaml
-          cd overlays/prod
+          cd overlays/k3s
           kustomize edit set image ghcr.io/zhangtao1994hk/argocd-apps/dao=ghcr.io/zhangtao1994hk/argocd-apps/dao:${{ github.sha }}
 
       - name: Commit and Push changes
@@ -56,7 +56,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          git add overlays/prod/kustomization.yaml
+          git add overlays/k3s/kustomization.yaml
           git commit -m "chore(dao): update image to ${{ github.sha }} [skip ci]" || echo "No changes to commit"          
           # 【重点防御】同样加上 pull --rebase
           git pull --rebase origin main
