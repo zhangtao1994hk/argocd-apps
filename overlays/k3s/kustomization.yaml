@@ -10,4 +10,4 @@ images:
   newTag: 2f7e62a17c9aebf90b9289064e21d489f27aad83
 - name: ghcr.io/zhangtao1994hk/argocd-apps/frontend
   newName: ghcr.io/zhangtao1994hk/argocd-apps/frontend
-  newTag: a21accf694d9b1d3125c9879c2f0eb550c29bd5f
+  newTag: d03517023b5b53f42c838819f06b2a7b00c3e92d
