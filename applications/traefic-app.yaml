@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://helm.traefik.io/traefik'  # 官方 Traefik Helm 仓库
+    targetRevision: 26.0.0                      # 固定 Helm Chart 版本（SRE 最佳实践：绝不使用 latest）
+    chart: traefik
+    helm:
+      values: |
+        ingressClass:
+          enabled: true
+          isDefaultClass: true      # 🌟 关键：将其设置为集群默认的 Ingress 控制器
+        providers:
+          kubernetesIngress:
+            enabled: true
+            publishedService:
+              enabled: true         # 让 Ingress 资源能正确显示 Traefik 的公网 IP
+        ports:
+          web:
+            port: 8000
+            expose: true
+            exposedPort: 80
+            nodePort: 32080
+          websecure:
+            port: 8443
+            expose: true
+            exposedPort: 443
+            nodePort: 32443
+        service:
+          type: LoadBalancer        # 🌟 关键：向 GCP 申请一个 L4 公网 IP
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: traefik              # 部署到独立的 traefik 命名空间
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true 
