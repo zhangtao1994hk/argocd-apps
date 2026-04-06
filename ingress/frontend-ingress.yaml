@@ -7,6 +7,7 @@ metadata:
     # 这里告诉 Traefik 使用 entrypoint 为 web (通常是 80 端口)
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
+  ingressClassName: traefik  
   rules:
   - host: frontend.local  # 你可以改成你喜欢的域名
     http:
