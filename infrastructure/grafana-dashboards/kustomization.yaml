@@ -13,3 +13,4 @@ configMapGenerator:
       - node-exporter-full.json
       - argocd-dashboard.json
       - k8s-global-view.json
+      - mysql-exporter.json
