@@ -3,6 +3,7 @@ import logging
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
+from datetime import datetime, timezone
 
 
 
@@ -46,12 +47,45 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# 3. 定义数据模型
+def utcnow():
+    return datetime.now(timezone.utc)
+
+
+# 3. 表结构（DAO 只做数据存取，不做业务逻辑）
 class Product(db.Model):
-    __tablename__ = 'products'
+    __tablename__ = "products"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    sku = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(120), nullable=False)
+    price_cents = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+
+class Inventory(db.Model):
+    __tablename__ = "inventory"
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), primary_key=True)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
+
+
+class Order(db.Model):
+    __tablename__ = "orders"
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(32), nullable=False, default="CREATED")  # CREATED|PAID|CANCELLED
+    subtotal_cents = db.Column(db.Integer, nullable=False, default=0)
+    discount_cents = db.Column(db.Integer, nullable=False, default=0)
+    total_cents = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+
+class OrderItem(db.Model):
+    __tablename__ = "order_items"
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), nullable=False, index=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False, index=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_price_cents = db.Column(db.Integer, nullable=False)
+    line_total_cents = db.Column(db.Integer, nullable=False)
 
 # 初始化表
 with app.app_context():
@@ -61,34 +95,183 @@ with app.app_context():
     except Exception as e:
         logger.error(f"Failed to initialize DB: {e}")
 
-# 4. API 接口
-@app.route('/product', methods=['POST'])
-def add_product():
-    data = request.json
+def money_to_cents(value):
+    # Accept int cents or numeric string; keep minimal and predictable.
+    if value is None:
+        raise ValueError("missing value")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(round(value * 100))
+    if isinstance(value, str):
+        # allow "12.34" or "1234"
+        if "." in value:
+            return int(round(float(value) * 100))
+        return int(value)
+    raise ValueError("invalid money type")
+
+
+def product_to_dict(p: Product, inv_qty=None):
+    out = {
+        "id": p.id,
+        "sku": p.sku,
+        "name": p.name,
+        "price_cents": p.price_cents,
+    }
+    if inv_qty is not None:
+        out["stock"] = inv_qty
+    return out
+
+
+# 4. DAO API（给 backend 用）
+@app.route("/products", methods=["GET"])
+def list_products():
+    products = Product.query.order_by(Product.id.asc()).all()
+    inv_map = {i.product_id: i.quantity for i in Inventory.query.all()}
+    return jsonify([product_to_dict(p, inv_map.get(p.id, 0)) for p in products])
+
+
+@app.route("/products", methods=["POST"])
+def create_product():
+    data = request.get_json(silent=True) or {}
     try:
-        new_product = Product(name=data['name'], price=data['price'])
-        db.session.add(new_product)
+        sku = (data.get("sku") or "").strip()
+        name = (data.get("name") or "").strip()
+        price_cents = money_to_cents(data.get("price_cents"))
+        stock = int(data.get("stock", 0))
+        if not sku or not name or price_cents < 0 or stock < 0:
+            return jsonify({"error": "invalid payload"}), 400
+
+        if Product.query.filter_by(sku=sku).first() is not None:
+            return jsonify({"error": "sku already exists"}), 409
+
+        p = Product(sku=sku, name=name, price_cents=price_cents)
+        db.session.add(p)
+        db.session.flush()  # get p.id
+        db.session.add(Inventory(product_id=p.id, quantity=stock))
         db.session.commit()
-        logger.info(f"Inserted new product: {new_product.name}")
-        return jsonify({"message": "Success", "id": new_product.id}), 201
+        return jsonify(product_to_dict(p, stock)), 201
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Failed to insert product: {str(e)}")
-        return jsonify({"error": "Database error"}), 500
+        logger.error("create_product failed: %s", e)
+        return jsonify({"error": "database error"}), 500
 
-@app.route('/product/<int:pid>', methods=['GET'])
+
+@app.route("/products/<int:pid>", methods=["GET"])
 def get_product(pid):
     try:
-        product = Product.query.get(pid)
-        if product:
-            logger.info(f"Query found product: {product.name}")
-            return jsonify({"id": product.id, "name": product.name, "price": product.price})
-        else:
-            logger.warning(f"Product {pid} not found")
-            return jsonify({"error": "Not Found"}), 404
+        p = Product.query.get(pid)
+        if not p:
+            return jsonify({"error": "not found"}), 404
+        inv = Inventory.query.get(pid)
+        return jsonify(product_to_dict(p, inv.quantity if inv else 0))
     except Exception as e:
-        logger.error(f"Database query error: {str(e)}")
-        return jsonify({"error": "Database error"}), 500
+        logger.error("get_product failed: %s", e)
+        return jsonify({"error": "database error"}), 500
+
+
+@app.route("/orders", methods=["POST"])
+def create_order():
+    """
+    Payload:
+      { "items": [ {"product_id": 1, "quantity": 2}, ... ],
+        "discount_cents": 0 }
+
+    Note: pricing is calculated from current product price_cents stored in DB.
+    """
+    data = request.get_json(silent=True) or {}
+    items = data.get("items") or []
+    try:
+        if not isinstance(items, list) or len(items) == 0:
+            return jsonify({"error": "items required"}), 400
+
+        discount_cents = int(data.get("discount_cents", 0))
+        if discount_cents < 0:
+            return jsonify({"error": "invalid discount"}), 400
+
+        order = Order(status="CREATED")
+        db.session.add(order)
+        db.session.flush()
+
+        subtotal = 0
+        for it in items:
+            pid = int(it.get("product_id"))
+            qty = int(it.get("quantity"))
+            if qty <= 0:
+                raise ValueError("invalid quantity")
+
+            p = Product.query.get(pid)
+            if not p:
+                return jsonify({"error": f"product {pid} not found"}), 404
+
+            inv = Inventory.query.get(pid)
+            if not inv or inv.quantity < qty:
+                return jsonify({"error": f"insufficient stock for product {pid}"}), 409
+
+            inv.quantity -= qty
+            line_total = p.price_cents * qty
+            subtotal += line_total
+            db.session.add(
+                OrderItem(
+                    order_id=order.id,
+                    product_id=pid,
+                    quantity=qty,
+                    unit_price_cents=p.price_cents,
+                    line_total_cents=line_total,
+                )
+            )
+
+        total = max(0, subtotal - discount_cents)
+        order.subtotal_cents = subtotal
+        order.discount_cents = discount_cents
+        order.total_cents = total
+        db.session.commit()
+        return jsonify(
+            {
+                "id": order.id,
+                "status": order.status,
+                "subtotal_cents": subtotal,
+                "discount_cents": discount_cents,
+                "total_cents": total,
+            }
+        ), 201
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        logger.error("create_order failed: %s", e)
+        return jsonify({"error": "database error"}), 500
+
+
+@app.route("/orders/<int:oid>", methods=["GET"])
+def get_order(oid):
+    try:
+        order = Order.query.get(oid)
+        if not order:
+            return jsonify({"error": "not found"}), 404
+        items = OrderItem.query.filter_by(order_id=oid).order_by(OrderItem.id.asc()).all()
+        return jsonify(
+            {
+                "id": order.id,
+                "status": order.status,
+                "subtotal_cents": order.subtotal_cents,
+                "discount_cents": order.discount_cents,
+                "total_cents": order.total_cents,
+                "items": [
+                    {
+                        "product_id": i.product_id,
+                        "quantity": i.quantity,
+                        "unit_price_cents": i.unit_price_cents,
+                        "line_total_cents": i.line_total_cents,
+                    }
+                    for i in items
+                ],
+            }
+        )
+    except Exception as e:
+        logger.error("get_order failed: %s", e)
+        return jsonify({"error": "database error"}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
