@@ -30,11 +30,16 @@ spec:
             expose: true
             exposedPort: 443
             nodePort: 32443
+        logs:
+          general:
+            level: INFO
+          access:
+            enabled: true
+            format: json
+            # filePath 留空即代表输出到 Stdout
+        
         service:
           type: LoadBalancer        # 🌟 关键：向 GCP 申请一个 L4 公网 IP
-        accessLog:
-          format: json
-          filePath: "" # 设置为空，确保日志输出到标准输出 (Stdout)
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: traefik              # 部署到独立的 traefik 命名空间
