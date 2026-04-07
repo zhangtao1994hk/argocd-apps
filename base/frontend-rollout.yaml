@@ -33,7 +33,7 @@ spec:
             - name: OTEL_METRIC_EXPORT_INTERVAL
               value: "15000"
             - name: APP_VERSION
-              value: "f089defdf72c1231dc17900c5f3eceaecc234562"
+              value: "8292fe111fabec7e541c24ea16deabc49b044d55"
           resources:
             requests:
               cpu: "100m"
