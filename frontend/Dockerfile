@@ -1,3 +1,4 @@
+
 # 阶段 1：编译 Vue 代码 (注意 AS 大写)
 FROM node:22-alpine AS build-stage
 WORKDIR /app
