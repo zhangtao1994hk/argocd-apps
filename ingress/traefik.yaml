@@ -1,11 +1,14 @@
+# Traefik 内置 api@internal 只挂在 /dashboard/ 与 /api 下；仅匹配 Host 时访问 / 会 404。
+# 请打开: http://traefik.local/dashboard/ （注意路径与末尾斜杠）
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: traefik-dashboard
+  # 勿用 traefik-dashboard：与 Helm chart 自带的 IngressRoute 同名会冲突（chart 只挂在内部 entrypoint traefik）
+  name: traefik-dashboard-web
   namespace: traefik # 必须和 Traefik 在同一个命名空间
 spec:
   entryPoints:
-    - web # 监听 80 端口，如果配置了 https 则改为 websecure
+    - web
   routes:
     - match: Host(`traefik.local`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
       kind: Rule
