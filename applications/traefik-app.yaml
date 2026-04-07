@@ -38,6 +38,16 @@ spec:
             format: json
             # filePath 留空即代表输出到 Stdout
         
+        tracing:
+          enabled: true
+          backend: otlp
+          otlp:
+            grpc:
+              endpoint: http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317
+            # 如果你使用 HTTP 协议
+            # http:
+            #   endpoint: http://otel-collector:4318
+
         service:
           type: LoadBalancer        # 🌟 关键：向 GCP 申请一个 L4 公网 IP
   destination:
