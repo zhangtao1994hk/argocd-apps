@@ -1,13 +1,14 @@
-# Argo CD server 在 443 上是 HTTPS（默认自签名）。普通 Ingress 会用 HTTP 连 443，页面打不开或一直转圈。
-# 用 IngressRoute：scheme https + ServersTransport 跳过对后端证书的校验（仅适合内网 / 信任网络）。
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: ServersTransport
-metadata:
-  name: argocd-backend-tls
-  namespace: argocd
-spec:
-  insecureSkipVerify: true
+# Argo CD 在 Traefik 后：官方推荐让 server 跑「对内明文 HTTP」(insecure)，由 Ingress 终止 TLS 或走 HTTP。
+# 若继续用 HTTPS 回源 443，gRPC-Web 常出现 “failed to load data” 后闪退。
+#
+# 在集群执行（合并进现有 ConfigMap，不会整份替换）：
+#   kubectl -n argocd patch configmap argocd-cmd-params-cm --type merge -p '{"data":{"server.insecure":"true"}}'
+#   kubectl -n argocd patch configmap argocd-cm --type merge -p '{"data":{"url":"http://argocd.local"}}'
+#   kubectl -n argocd rollout restart deployment argocd-server
+#
+# url 须与浏览器地址一致（http/https、主机名）。改域名时同步改下面 Host(...) 与 url。
+#
+# 若已用 HTTPS 访问（websecure + 证书），把 url 改成 https://你的域名，并相应使用 entryPoints: websecure。
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -18,11 +19,20 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`argocd.local`)
+    # 原生 gRPC（argocd CLI）；勿匹配 grpc-web（application/grpc-web+proto），否则会误走 h2c 导致 UI 异常
+    - match: Host(`argocd.local`) && Header(`Content-Type`, `application/grpc`)
+      priority: 20
       kind: Rule
       services:
         - name: argocd-server
-          port: 443
-          scheme: https
+          port: 80
+          scheme: h2c
           passHostHeader: true
-          serversTransport: argocd-backend-tls
+    # UI / gRPC-Web 等走 HTTP/1.1 → 80（要求 server.insecure=true）
+    - match: Host(`argocd.local`)
+      priority: 10
+      kind: Rule
+      services:
+        - name: argocd-server
+          port: 80
+          passHostHeader: true
