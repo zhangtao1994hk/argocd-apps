@@ -17,4 +17,4 @@ spec:
           service:
             name: argocd-server # 确保这个 Service 名称和你创建的一致
             port:
-              number: 80
+              number: 443
