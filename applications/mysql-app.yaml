@@ -5,6 +5,9 @@ metadata:
   namespace: argocd
 spec:
   project: default
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: middleware
   source:
     repoURL: 'https://charts.bitnami.com/bitnami'
     targetRevision: 9.15.0 # 建议锁定版本
@@ -34,3 +37,10 @@ spec:
           serviceMonitor:
             enabled: true # 如果你有 Prometheus Operator，开启这个会自动发现
             namespace: monitoring # 指向你的 Prometheus 所在的命名空间
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
