@@ -15,6 +15,18 @@ spec:
     helm:
       values: |
         
+        # 镜像显式指定，避免默认 tag 变化导致 ImagePull / Image not found
+        global:
+          imageRegistry: docker.io
+
+        image:
+          repository: bitnami/mysql
+          tag: "8.0.35-debian-11-r0"
+        
+        metrics:
+          image:
+            repository: bitnami/mysqld-exporter
+            tag: "0.15.0-debian-11-r70"
         
         # 2. 设置强密码 (生产环境建议用 Secret 引用)
         auth:
