@@ -1,0 +1,6 @@
+mysql:
+  rootPassword: "YourStrongPassword"
+  mycnf: |
+    [mysqld]
+    max_connections = 1000
+    innodb_buffer_pool_size = 1G

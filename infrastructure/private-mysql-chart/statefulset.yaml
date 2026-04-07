@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: database
+spec:
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+      annotations:
+        # 如果你装了 Prometheus，这几行会让它自动来抓取 9104 端口的监控数据
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9104"
+    spec:
+      containers:
+        # --- 容器 1: 官方 MySQL ---
+        - name: mysql
+          image: mysql:8.0 # Oracle 官方镜像，永久免费开源
+          ports:
+            - containerPort: 3306
+          envFrom:
+            - secretRef:
+                name: mysql-secret
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+            - name: config-volume
+              # 将你的配置挂载到 K8s 官方推荐的扩展配置目录
+              mountPath: /etc/mysql/conf.d/custom.cnf
+              subPath: custom.cnf
+              
+        # --- 容器 2: 官方 Exporter (Sidecar) ---
+        - name: mysqld-exporter
+          image: prom/mysqld-exporter:latest # Prometheus 官方镜像
+          ports:
+            - containerPort: 9104
+          envFrom:
+            - secretRef:
+                name: mysql-secret
+                
+      volumes:
+        - name: config-volume
+          configMap:
+            name: mysql-config
+            defaultMode: 0644
+            
+  # PVC 模板：保证 MySQL 哪怕 Pod 重启或漂移，数据也不会丢
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
