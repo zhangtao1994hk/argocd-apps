@@ -40,6 +40,12 @@ spec:
           image: prom/mysqld-exporter:latest # Prometheus 官方镜像
           ports:
             - containerPort: 9104
+          args:
+            - "--config.my-cnf=/etc/exporter/.my.cnf"
+          volumeMounts:
+            - name: exporter-auth
+              mountPath: /etc/exporter
+              readOnly: true
           envFrom:
             - secretRef:
                 name: mysql-secret
@@ -49,7 +55,10 @@ spec:
           configMap:
             name: mysql-config
             defaultMode: 0644
-            
+        - name: exporter-auth
+          secret:
+            secretName: mysql-secret   
+
   # PVC 模板：保证 MySQL 哪怕 Pod 重启或漂移，数据也不会丢
   volumeClaimTemplates:
     - metadata:
