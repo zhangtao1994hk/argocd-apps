@@ -14,9 +14,10 @@ spec:
     chart: mysql
     helm:
       values: |
+        
         # 1. 使用 MySQL 8.0
         image:
-          tag: 8.0
+          tag: 8.0.36
         
         # 2. 设置强密码 (生产环境建议用 Secret 引用)
         auth:
