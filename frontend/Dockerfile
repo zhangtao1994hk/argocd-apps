@@ -1,11 +1,17 @@
-FROM python:3.12-slim
+# 阶段 1：编译 Vue 代码
+FROM node:18-alpine as build-stage
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
 
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# 阶段 2：使用 Nginx 运行编译后的静态文件
+FROM nginx:stable-alpine as production-stage
+# 复制编译好的 dist 目录到 Nginx 目录
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+# 替换自定义的 Nginx 配置
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN pip install flask requests gunicorn opentelemetry-distro opentelemetry-instrumentation opentelemetry-exporter-otlp-proto-grpc opentelemetry-exporter-otlp-proto-http
-RUN opentelemetry-bootstrap -a install
-COPY app.py .
-CMD ["opentelemetry-instrument","gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
+EXPOSE 5000
+CMD ["nginx", "-g", "daemon off;"]
