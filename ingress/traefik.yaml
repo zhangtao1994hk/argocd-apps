@@ -1,0 +1,14 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: traefik # 必须和 Traefik 在同一个命名空间
+spec:
+  entryPoints:
+    - web # 监听 80 端口，如果配置了 https 则改为 websecure
+  routes:
+    - match: Host(`traefik.local`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
+      kind: Rule
+      services:
+        - name: api@internal
+          kind: TraefikService
