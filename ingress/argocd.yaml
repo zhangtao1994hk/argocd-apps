@@ -1,20 +1,28 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# Argo CD server 在 443 上是 HTTPS（默认自签名）。普通 Ingress 会用 HTTP 连 443，页面打不开或一直转圈。
+# 用 IngressRoute：scheme https + ServersTransport 跳过对后端证书的校验（仅适合内网 / 信任网络）。
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: ServersTransport
 metadata:
-  name: argocd-ingress
+  name: argocd-backend-tls
   namespace: argocd
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
-  ingressClassName: traefik  
-  rules:
-  - host: argocd.local  # 你可以改成你喜欢的域名
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-server # 确保这个 Service 名称和你创建的一致
-            port:
-              number: 443
+  insecureSkipVerify: true
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-server-http
+  namespace: argocd
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`argocd.local`)
+      kind: Rule
+      services:
+        - name: argocd-server
+          port: 443
+          scheme: https
+          passHostHeader: true
+          serversTransport: argocd-backend-tls
