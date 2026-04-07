@@ -1,10 +1,25 @@
 <template>
-  <div class="auth-form">
-    <h2>用户登录</h2>
-    <input v-model="username" placeholder="用户名 (admin)" />
-    <input v-model="password" type="password" placeholder="密码 (123456)" />
-    <button @click="handleLogin">登录</button>
-  </div>
+  <section class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <p class="eyebrow">欢迎回来</p>
+        <h2>登录你的账户</h2>
+        <p class="auth-intro">使用演示账号登录，体验完整 SRE 电商流程。</p>
+      </div>
+
+      <div class="form-field">
+        <label>用户名</label>
+        <input v-model="username" placeholder="admin" autocomplete="username" />
+      </div>
+      <div class="form-field">
+        <label>密码</label>
+        <input v-model="password" type="password" placeholder="123456" autocomplete="current-password" />
+      </div>
+
+      <button class="primary-btn" @click="handleLogin">登录</button>
+      <p class="auth-footnote">提示：用户名 <strong>admin</strong> / 密码 <strong>123456</strong></p>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -16,14 +31,92 @@ const router = useRouter()
 const username = ref('')
 const password = ref('')
 
-const handleLogin = async () => {
-  // 实际演练这里会调用 axios.post('/api/login', { username, password })
+const handleLogin = () => {
   if (username.value === 'admin' && password.value === '123456') {
     localStorage.setItem('token', 'fake-jwt-token-123')
     emit('login-success')
-    router.push('/orders') // 登录成功跳去订单页
+    router.push('/orders')
   } else {
     alert('用户名或密码错误！(提示: admin / 123456)')
   }
 }
 </script>
+
+<style scoped>
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding: 2.5rem 0;
+}
+
+.auth-card {
+  width: min(520px, 100%);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.auth-header {
+  margin-bottom: 1.8rem;
+}
+
+.auth-header h2 {
+  margin: 0.4rem 0 0.6rem;
+}
+
+.auth-intro {
+  margin: 0;
+  color: var(--muted);
+}
+
+.form-field {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1.2rem;
+}
+
+.form-field label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus {
+  border-color: rgba(125, 226, 255, 0.8);
+  box-shadow: 0 0 0 4px rgba(125, 226, 255, 0.12);
+}
+
+.primary-btn {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, #4fd6ff, #7de2ff);
+  color: #08101f;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+}
+
+.auth-footnote {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+</style>

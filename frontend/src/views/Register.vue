@@ -1,16 +1,29 @@
-啊，这是我的疏忽！我在 router/index.js 里配置了注册页面的路由，但是前面漏掉了 Register.vue 文件的代码，导致 Vite 编译时找不到这个文件报错了。
-
-请在 src/views/ 目录下新建一个 Register.vue 文件，并填入以下代码：
-
-src/views/Register.vue
 <template>
-  <div class="auth-form">
-    <h2>用户注册</h2>
-    <input v-model="username" placeholder="请输入用户名" />
-    <input v-model="password" type="password" placeholder="请输入密码" />
-    <input v-model="confirmPassword" type="password" placeholder="请确认密码" />
-    <button @click="handleRegister">注册</button>
-  </div>
+  <section class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <p class="eyebrow">创建账户</p>
+        <h2>开始你的 SRE 电商之旅</h2>
+        <p class="auth-intro">填写信息后即可体验现代化运维与购物流程。</p>
+      </div>
+
+      <div class="form-field">
+        <label>用户名</label>
+        <input v-model="username" placeholder="请输入用户名" autocomplete="username" />
+      </div>
+      <div class="form-field">
+        <label>密码</label>
+        <input v-model="password" type="password" placeholder="请输入密码" autocomplete="new-password" />
+      </div>
+      <div class="form-field">
+        <label>确认密码</label>
+        <input v-model="confirmPassword" type="password" placeholder="请再次输入密码" autocomplete="new-password" />
+      </div>
+
+      <button class="primary-btn" @click="handleRegister">注册</button>
+      <p class="auth-footnote">注册后请使用登录页进入系统。</p>
+    </div>
+  </section>
 </template>
 
 <script setup>
@@ -22,7 +35,7 @@ const username = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 
-const handleRegister = async () => {
+const handleRegister = () => {
   if (!username.value || !password.value) {
     alert('用户名和密码不能为空！')
     return
@@ -32,34 +45,86 @@ const handleRegister = async () => {
     return
   }
 
-  // 实际演练这里会调用 axios.post('/api/register', { username, password })
   alert(`注册成功！欢迎你，${username.value}。请登录。`)
-  router.push('/login') // 注册成功后跳转到登录页
+  router.push('/login')
 }
 </script>
 
 <style scoped>
-.auth-form {
+.auth-page {
   display: flex;
-  flex-direction: column;
-  width: 300px;
-  gap: 15px;
-  margin: 0 auto;
-  margin-top: 50px;
+  justify-content: center;
+  padding: 2.5rem 0;
 }
+
+.auth-card {
+  width: min(520px, 100%);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.auth-header {
+  margin-bottom: 1.8rem;
+}
+
+.auth-header h2 {
+  margin: 0.4rem 0 0.6rem;
+}
+
+.auth-intro {
+  margin: 0;
+  color: var(--muted);
+}
+
+.form-field {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1.2rem;
+}
+
+.form-field label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 input {
-  padding: 8px;
-  font-size: 16px;
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-button {
-  padding: 10px;
-  font-size: 16px;
-  background-color: #42b983;
-  color: white;
+
+input:focus {
+  border-color: rgba(125, 226, 255, 0.8);
+  box-shadow: 0 0 0 4px rgba(125, 226, 255, 0.12);
+}
+
+.primary-btn {
+  width: 100%;
   border: none;
+  border-radius: 999px;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, #4fd6ff, #7de2ff);
+  color: #08101f;
+  font-weight: 700;
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
-button:hover {
-  background-color: #33a06f;
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+}
+
+.auth-footnote {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 </style>
