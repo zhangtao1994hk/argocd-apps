@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mysql
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://charts.bitnami.com/bitnami'
+    targetRevision: 9.15.0 # 建议锁定版本
+    chart: mysql
+    helm:
+      values: |
+        # 1. 使用 MySQL 8.0
+        image:
+          tag: 8.0
+        
+        # 2. 设置强密码 (生产环境建议用 Secret 引用)
+        auth:
+          rootPassword: "777777"
+          database: "appdb"
+          username: "root"
+          password: "777777"
+        
+        # 3. 开启数据持久化 (非常重要，否则重启数据就没了)
+        primary:
+          persistence:
+            enabled: true
+            size: 10Gi
+            
+        # 4. 🌟 开启 MySQL Exporter (内置支持)
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: true # 如果你有 Prometheus Operator，开启这个会自动发现
+            namespace: monitoring # 指向你的 Prometheus 所在的命名空间
