@@ -51,8 +51,7 @@ jobs:
       - name: Update backend image tag via Kustomize
         run: |
           cd overlays/k3s
-          kustomize edit image set ghcr.io/zhangtao1994hk/argocd-apps/backend=ghcr.io/zhangtao1994hk/argocd-apps/backend:${{ github.sha }}
-
+          kustomize edit set image  ghcr.io/zhangtao1994hk/argocd-apps/backend=ghcr.io/zhangtao1994hk/argocd-apps/backend:${{ github.sha }}
 
       - name: Commit and Push changes
         run: |
