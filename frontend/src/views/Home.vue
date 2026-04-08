@@ -54,11 +54,33 @@ const products = ref([])
 const router = useRouter()
 
 const fetchProducts = async () => {
-  products.value = [
-    { id: 1, name: 'SRE 架构指南', price: 99 },
-    { id: 2, name: 'K8s 权威指南', price: 129 },
-    { id: 3, name: 'ArgoCD 实践', price: 89 }
-  ]
+  try {
+    const response = await fetch('/api/products')
+    if (response.ok) {
+      const data = await response.json()
+      products.value = data.map(product => ({
+        id: product.id,
+        name: product.name,
+        price: (product.price_cents / 100).toFixed(2)
+      }))
+    } else {
+      console.error('Failed to fetch products')
+      // 回退到示例数据
+      products.value = [
+        { id: 1, name: 'SRE 架构指南', price: '99.00' },
+        { id: 2, name: 'K8s 权威指南', price: '129.00' },
+        { id: 3, name: 'ArgoCD 实践', price: '89.00' }
+      ]
+    }
+  } catch (error) {
+    console.error('Error fetching products:', error)
+    // 回退到示例数据
+    products.value = [
+      { id: 1, name: 'SRE 架构指南', price: '99.00' },
+      { id: 2, name: 'K8s 权威指南', price: '129.00' },
+      { id: 3, name: 'ArgoCD 实践', price: '89.00' }
+    ]
+  }
 }
 
 const buy = (id) => {
