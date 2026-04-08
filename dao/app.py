@@ -64,6 +64,32 @@ redis_client = redis.Redis(
     decode_responses=True
 )
 
+def init_sample_data():
+    """初始化示例数据"""
+    try:
+        with app.app_context():
+            # 检查是否已有产品数据
+            if Product.query.count() == 0:
+                logger.info("Initializing sample products...")
+                products = [
+                    Product(sku="SRE-001", name="SRE 架构指南", price_cents=9900),
+                    Product(sku="K8S-001", name="K8s 权威指南", price_cents=12900),
+                    Product(sku="ARGOCD-001", name="ArgoCD 实践", price_cents=8900),
+                ]
+                for p in products:
+                    db.session.add(p)
+                db.session.commit()
+                logger.info("Sample products initialized")
+
+            # 检查库存
+            for p in Product.query.all():
+                if not Inventory.query.get(p.id):
+                    db.session.add(Inventory(product_id=p.id, quantity=100))
+            db.session.commit()
+            logger.info("Inventory initialized")
+    except Exception as e:
+        logger.error("Failed to initialize sample data: %s", e)
+
 def utcnow():
     return datetime.now(timezone.utc)
 
@@ -348,6 +374,8 @@ def login_user():
 def health():
     return jsonify({"status": "UP"}), 200
 
+
 if __name__ == '__main__':
+    init_sample_data()
     # 监听 0.0.0.0 以便容器内外部均可访问
     app.run(host='0.0.0.0', port=PORT)
