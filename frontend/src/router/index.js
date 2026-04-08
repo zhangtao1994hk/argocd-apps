@@ -18,7 +18,7 @@ const router = createRouter({
 
 // 路由守卫：检查是否登录
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('token') // 简单模拟 token
+  const isAuthenticated = localStorage.getItem('token') || localStorage.getItem('session_id')
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')
   } else {

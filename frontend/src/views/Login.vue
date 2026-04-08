@@ -52,7 +52,9 @@ const handleLogin = async () => {
     const data = await response.json()
 
     if (response.ok) {
-      localStorage.setItem('session_id', data.session_id)
+      const sessionId = data.session_id || data.id || ''
+      localStorage.setItem('session_id', sessionId)
+      localStorage.setItem('token', 'fake-jwt-token-123')
       emit('login-success')
       router.push('/orders')
     } else {
