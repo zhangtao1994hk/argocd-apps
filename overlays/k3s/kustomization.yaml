@@ -5,7 +5,8 @@ resources:
 - ../../base
 images:
 - name: ghcr.io/zhangtao1994hk/argocd-apps/backend
-  newTag: 440d7b7eb6d0e5a36cd774a36ebefc1b8c7209c2
+  newName: ghcr.io/zhangtao1994hk/argocd-apps/backend
+  newTag: 84941bc4589ec65d59865c00e53250e2997d565e
 - name: ghcr.io/zhangtao1994hk/argocd-apps/dao
   newName: ghcr.io/zhangtao1994hk/argocd-apps/dao
   newTag: a2ff002ed5131f3a5282a3d327f4dca1f1c7fcb3
