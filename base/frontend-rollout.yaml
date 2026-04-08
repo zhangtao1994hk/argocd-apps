@@ -34,11 +34,11 @@ spec:
               value: "a2ff002ed5131f3a5282a3d327f4dca1f1c7fcb3"
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: "50m"
+              memory: "64Mi"
             limits:
-              cpu: "500m"
-              memory: "256Mi"
+              cpu: "200m"
+              memory: "128Mi"
           ports:
             - containerPort: 5000
           livenessProbe:
