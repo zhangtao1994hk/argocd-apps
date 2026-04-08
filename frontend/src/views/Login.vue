@@ -9,15 +9,15 @@
 
       <div class="form-field">
         <label>用户名</label>
-        <input v-model="username" placeholder="admin" autocomplete="username" />
+        <input v-model="username" placeholder="请输入用户名" autocomplete="username" />
       </div>
       <div class="form-field">
         <label>密码</label>
-        <input v-model="password" type="password" placeholder="123456" autocomplete="current-password" />
+        <input v-model="password" type="password" placeholder="请输入密码" autocomplete="current-password" />
       </div>
 
       <button class="primary-btn" @click="handleLogin">登录</button>
-      <p class="auth-footnote">提示：用户名 <strong>admin</strong> / 密码 <strong>123456</strong></p>
+      <p class="auth-footnote">没有账户？<router-link to="/register">注册新账户</router-link></p>
     </div>
   </section>
 </template>
@@ -31,13 +31,36 @@ const router = useRouter()
 const username = ref('')
 const password = ref('')
 
-const handleLogin = () => {
-  if (username.value === 'admin' && password.value === '123456') {
-    localStorage.setItem('token', 'fake-jwt-token-123')
-    emit('login-success')
-    router.push('/orders')
-  } else {
-    alert('用户名或密码错误！(提示: admin / 123456)')
+const handleLogin = async () => {
+  if (!username.value || !password.value) {
+    alert('用户名和密码不能为空！')
+    return
+  }
+
+  try {
+    const response = await fetch('/api/users/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      localStorage.setItem('session_id', data.session_id)
+      emit('login-success')
+      router.push('/orders')
+    } else {
+      alert(data.error || '登录失败！')
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    alert('网络错误，请稍后重试！')
   }
 }
 </script>

@@ -83,12 +83,36 @@ const fetchProducts = async () => {
   }
 }
 
-const buy = (id) => {
-  if (!localStorage.getItem('token')) {
+const buy = async (id) => {
+  const sessionId = localStorage.getItem('session_id')
+  if (!sessionId) {
     alert('请先登录！')
     router.push('/login')
-  } else {
-    alert(`购买请求已发送 (商品ID: ${id})`)
+    return
+  }
+
+  try {
+    const response = await fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionId}`
+      },
+      body: JSON.stringify({
+        items: [{ product_id: id, quantity: 1 }]
+      })
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      alert(`订单创建成功！订单ID: ${data.id}`)
+    } else {
+      const error = await response.json()
+      alert(`购买失败: ${error.error}`)
+    }
+  } catch (error) {
+    console.error('Buy error:', error)
+    alert('网络错误，请稍后重试！')
   }
 }
 

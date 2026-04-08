@@ -27,12 +27,45 @@ import { ref, onMounted } from 'vue'
 
 const orders = ref([])
 
-onMounted(() => {
-  orders.value = [
-    { id: 'ORD-001', itemName: 'SRE 架构指南', status: '已发货' },
-    { id: 'ORD-002', itemName: 'K8s 权威指南', status: '待付款' }
-  ]
-})
+const fetchOrders = async () => {
+  const sessionId = localStorage.getItem('session_id')
+  if (!sessionId) {
+    alert('请先登录！')
+    return
+  }
+
+  try {
+    const response = await fetch('/api/orders', {
+      headers: {
+        'Authorization': `Bearer ${sessionId}`
+      }
+    })
+    if (response.ok) {
+      const data = await response.json()
+      orders.value = data.map(order => ({
+        id: order.id,
+        itemName: order.item_name,
+        status: order.status
+      }))
+    } else {
+      console.error('Failed to fetch orders')
+      // 回退到示例数据
+      orders.value = [
+        { id: 'ORD-001', itemName: 'SRE 架构指南', status: '已发货' },
+        { id: 'ORD-002', itemName: 'K8s 权威指南', status: '待付款' }
+      ]
+    }
+  } catch (error) {
+    console.error('Error fetching orders:', error)
+    // 回退到示例数据
+    orders.value = [
+      { id: 'ORD-001', itemName: 'SRE 架构指南', status: '已发货' },
+      { id: 'ORD-002', itemName: 'K8s 权威指南', status: '待付款' }
+    ]
+  }
+}
+
+onMounted(fetchOrders)
 </script>
 
 <style scoped>
