@@ -2,6 +2,7 @@ import os
 import logging
 import requests
 from flask import Flask, jsonify, request
+import redis
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s : %(message)s')
 
@@ -10,6 +11,21 @@ logger = logging.getLogger("backend-service")
 app = Flask(__name__)
 
 DAO_URL = os.getenv("DAO_URL", "http://dao-service:5000")
+
+# Redis 配置
+REDIS_HOST = os.getenv("REDIS_HOST", "redis-svc.middleware.svc.cluster.local")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "666666")
+REDIS_DB = int(os.getenv("REDIS_DB", "0"))
+
+# Redis 连接
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASSWORD,
+    db=REDIS_DB,
+    decode_responses=True
+)
 
 def compute_discount_cents(items, products_by_id):
     """
@@ -86,6 +102,27 @@ def create_order():
     except requests.exceptions.RequestException as e:
         logger.error("DAO unavailable: %s", e)
         return jsonify({"error": "Service Unavailable"}), 503
+
+
+@app.route("/api/users/register", methods=["POST"])
+def register_user():
+    try:
+        r = requests.post(f"{DAO_URL}/users", json=request.get_json(), timeout=5)
+        return (r.content, r.status_code, {"Content-Type": r.headers.get("Content-Type", "application/json")})
+    except requests.exceptions.RequestException as e:
+        logger.error("DAO unavailable: %s", e)
+        return jsonify({"error": "Service Unavailable"}), 503
+
+
+@app.route("/api/users/login", methods=["POST"])
+def login_user():
+    try:
+        r = requests.post(f"{DAO_URL}/users/login", json=request.get_json(), timeout=5)
+        return (r.content, r.status_code, {"Content-Type": r.headers.get("Content-Type", "application/json")})
+    except requests.exceptions.RequestException as e:
+        logger.error("DAO unavailable: %s", e)
+        return jsonify({"error": "Service Unavailable"}), 503
+
 
 @app.route('/health', methods=['GET'])
 def health():

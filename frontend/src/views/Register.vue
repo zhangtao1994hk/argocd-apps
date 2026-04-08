@@ -35,7 +35,7 @@ const username = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 
-const handleRegister = () => {
+const handleRegister = async () => {
   if (!username.value || !password.value) {
     alert('用户名和密码不能为空！')
     return
@@ -45,8 +45,28 @@ const handleRegister = () => {
     return
   }
 
-  alert(`注册成功！欢迎你，${username.value}。请登录。`)
-  router.push('/login')
+  try {
+    const response = await fetch('/api/users/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value,
+      }),
+    })
+
+    if (response.ok) {
+      alert(`注册成功！欢迎你，${username.value}。请登录。`)
+      router.push('/login')
+    } else {
+      const error = await response.json()
+      alert(`注册失败：${error.error}`)
+    }
+  } catch (error) {
+    alert('网络错误，请稍后重试')
+  }
 }
 </script>
 

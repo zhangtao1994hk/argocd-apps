@@ -34,6 +34,16 @@ spec:
           value: "otlp"
         - name: OTEL_METRIC_EXPORT_INTERVAL
           value: "15000"
+        - name: DAO_URL
+          value: "http://dao-service:5000"
+        - name: REDIS_HOST
+          value: "redis-svc.middleware.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_PASSWORD
+          value: "666666"
+        - name: REDIS_DB
+          value: "0"
         resources:
           requests:
             cpu: "100m"      # 基准需求：0.1个CPU核（HPA算百分比的分母）

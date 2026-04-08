@@ -4,6 +4,8 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
 from datetime import datetime, timezone
+import redis
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 
@@ -21,6 +23,12 @@ DB_PORT = int(os.getenv("DB_PORT", "3306"))
 # 你的 mysql chart 只负责起实例，不一定会预先创建数据库；这里默认 appdb，并在启动时自动创建
 DB_NAME = os.getenv("DB_NAME", "appdb")
 PORT = int(os.getenv("PORT", 5000)) # 从环境变量读取端口，默认5000
+
+# Redis 配置
+REDIS_HOST = os.getenv("REDIS_HOST", "redis-svc.middleware.svc.cluster.local")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "666666")
+REDIS_DB = int(os.getenv("REDIS_DB", "0"))
 
 def ensure_database_exists():
     try:
@@ -46,6 +54,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{D
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# Redis 连接
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    password=REDIS_PASSWORD,
+    db=REDIS_DB,
+    decode_responses=True
+)
 
 def utcnow():
     return datetime.now(timezone.utc)
@@ -86,6 +103,14 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     unit_price_cents = db.Column(db.Integer, nullable=False)
     line_total_cents = db.Column(db.Integer, nullable=False)
+
+
+class User(db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(128), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
 
 # 初始化表
 with app.app_context():
@@ -271,6 +296,52 @@ def get_order(oid):
         )
     except Exception as e:
         logger.error("get_order failed: %s", e)
+        return jsonify({"error": "database error"}), 500
+
+
+@app.route("/users", methods=["POST"])
+def create_user():
+    data = request.get_json(silent=True) or {}
+    try:
+        username = (data.get("username") or "").strip()
+        password = data.get("password", "")
+        if not username or not password:
+            return jsonify({"error": "username and password required"}), 400
+        if len(username) < 3 or len(password) < 6:
+            return jsonify({"error": "username must be at least 3 chars, password at least 6"}), 400
+
+        if User.query.filter_by(username=username).first() is not None:
+            return jsonify({"error": "username already exists"}), 409
+
+        user = User(
+            username=username,
+            password_hash=generate_password_hash(password)
+        )
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"id": user.id, "username": user.username}), 201
+    except Exception as e:
+        db.session.rollback()
+        logger.error("create_user failed: %s", e)
+        return jsonify({"error": "database error"}), 500
+
+
+@app.route("/users/login", methods=["POST"])
+def login_user():
+    data = request.get_json(silent=True) or {}
+    try:
+        username = (data.get("username") or "").strip()
+        password = data.get("password", "")
+        if not username or not password:
+            return jsonify({"error": "username and password required"}), 400
+
+        user = User.query.filter_by(username=username).first()
+        if not user or not check_password_hash(user.password_hash, password):
+            return jsonify({"error": "invalid credentials"}), 401
+
+        return jsonify({"id": user.id, "username": user.username}), 200
+    except Exception as e:
+        logger.error("login_user failed: %s", e)
         return jsonify({"error": "database error"}), 500
 
 @app.route('/health', methods=['GET'])
