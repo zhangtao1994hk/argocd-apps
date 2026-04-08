@@ -35,7 +35,7 @@ spec:
         - name: OTEL_METRIC_EXPORT_INTERVAL
           value: "15000"
         - name: DAO_URL
-          value: "http://dao-service:5000"
+          value: "http://dao-service.default.svc.cluster.local:5000"
         - name: REDIS_HOST
           value: "redis-svc.middleware.svc.cluster.local"
         - name: REDIS_PORT
