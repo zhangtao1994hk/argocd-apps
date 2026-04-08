@@ -41,6 +41,23 @@ spec:
           enabled: false
         singleBinary:
           replicas: 1
+        # 调整缓存内存配置以匹配实际使用
+        chunksCache:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 200Mi
+        resultsCache:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 50Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
