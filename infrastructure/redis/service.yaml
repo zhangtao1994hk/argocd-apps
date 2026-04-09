@@ -22,3 +22,44 @@ subsets:
       - ip: 10.128.0.2   # 外部 Redis 的真实 IP 地址
     ports:
       - port: 6379         # 外部 Redis 的真实端口
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: redis-exporter-external # 必须与 Service 名一致
+  namespace: middleware
+subsets:
+  - addresses:
+      - ip: 10.128.0.2 # 填写你集群外 Redis 服务器的实际 IP
+    ports:
+      - name: metrics
+        port: 9121
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-exporter-external
+  namespace: middleware
+  labels:
+    app: redis-exporter
+spec:
+  ports:
+  - name: metrics
+    port: 9121
+    targetPort: 9121
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-exporter-external-monitor
+  namespace: middleware
+  labels:
+    release: prometheus # 确保匹配你 Prometheus 的选择器
+spec:
+  selector:
+    matchLabels:
+      app: redis-exporter # 匹配上面创建的 Service 标签
+  endpoints:
+  - port: metrics
+    interval: 15s
+
