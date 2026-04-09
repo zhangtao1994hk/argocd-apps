@@ -20,7 +20,7 @@ spec:
     - web
   routes:
     # UI / gRPC-Web 等走 HTTP/1.1 → 80（要求 server.insecure=true）
-    - match: Host(`argocd.local`)
+    - match: Host(`argocd.zhangtao1994hk.asia`)
       priority: 10
       kind: Rule
       services:
