@@ -19,7 +19,6 @@ spec:
   entryPoints:
     - web
   routes:
-    # UI / gRPC-Web 等走 HTTP/1.1 → 80（要求 server.insecure=true）
     - match: Host(`argocd.local`)
       priority: 10
       kind: Rule
