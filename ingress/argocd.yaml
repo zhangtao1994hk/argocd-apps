@@ -17,6 +17,7 @@ metadata:
   namespace: argocd
 spec:
   entryPoints:
+    - web
     - websecure  # 监听 443 端口
   routes:
     - match: Host(`argocd.zhangtao1994hk.asia`)
