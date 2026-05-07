@@ -18,7 +18,6 @@ metadata:
 spec:
   entryPoints:
     - web
-    - websecure  # 监听 443 端口
   routes:
     - match: Host(`argocd.zhangtao1994hk.asia`)
       priority: 10
@@ -26,5 +25,3 @@ spec:
       services:
         - name: argo-cd-argocd-server
           port: 80
-          passHostHeader: true
-  tls: {} # 关键：开启 TLS。如果由 Cloudflare 代理，这里可以保持为空或使用 Traefik 默认证书
