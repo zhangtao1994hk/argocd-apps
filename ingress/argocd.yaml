@@ -24,7 +24,7 @@ spec:
       priority: 10
       kind: Rule
       services:
-        - name: argocd-server
+        - name: argo-cd-argocd-server
           port: 80
           passHostHeader: true
   tls: {} # 关键：开启 TLS。如果由 Cloudflare 代理，这里可以保持为空或使用 Traefik 默认证书
