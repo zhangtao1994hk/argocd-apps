@@ -1,20 +1,20 @@
-# 1. 监控 argocd-metrics (Controller)
+# 1. Controller Metrics
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: argocd-metrics
-  namespace: argocd # 请确保这是你安装 ArgoCD 的命名空间
+  namespace: argocd
   labels:
-    release: kube-prometheus-stack # 必须要有这个标签
+    release: kube-prometheus-stack
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: argocd-metrics
+      app.kubernetes.io/name: argocd-metrics # 匹配第一个 SVC
   endpoints:
-  - port: metrics
+  - port: metrics # 如果报错，请尝试改成 targetPort 的名字，或者直接用数字 8082 (不推荐)
     interval: 30s
 ---
-# 2. 监控 argocd-server-metrics
+# 2. Server Metrics
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -25,12 +25,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: argocd-server-metrics
+      app.kubernetes.io/name: argocd-server-metrics # 匹配最后一个 SVC
   endpoints:
-  - port: metrics
+  - port: metrics # 确认 SVC 里 8083 对应的名字是 metrics
     interval: 30s
 ---
-# 3. 监控 argocd-repo-server-metrics
+# 3. Repo Server Metrics
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -41,7 +41,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: argocd-repo-server-metrics
+      app.kubernetes.io/name: argocd-repo-server-metrics # 匹配倒数第三个 SVC
   endpoints:
-  - port: metrics
+  - port: metrics # 确认 SVC 里 8084 对应的名字是 metrics
     interval: 30s
