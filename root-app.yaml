@@ -74,6 +74,7 @@ spec:
 #   ├── frontend-app.yaml       (Frontend 服务)
 #   ├── mysql-app.yaml          (MySQL 数据库)
 #   ├── redis-app.yaml          (Redis 缓存)
+#   ├── kafka-app.yaml          (Kafka 消息队列)
 #   ├── prometheus-app.yaml     (监控)
 #   ├── grafana-dashboards-app.yaml
 #   └── ... (更多应用)

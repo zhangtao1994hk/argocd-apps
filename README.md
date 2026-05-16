@@ -105,6 +105,7 @@ kubectl get applications -n argocd -o wide
     │  ├─ otel-collector-app                      │
     │  ├─ mysql-app                               │
     │  ├─ redis-app                               │
+    │  ├─ kafka-app                               │
     │  ├─ argo-rollouts-app                       │
     │  └─ ...                                     │
     │                                              │
@@ -133,9 +134,9 @@ kubectl get applications -n argocd -o wide
 ├─────────────────────────────────────────────┤
 │     Infrastructure Layer (基础设施层)        │
 │                                             │
-│  ┌────────┬────────┬─────────┬──────────┐   │
-│  │ MySQL  │ Redis  │ArgoCD  │ Traefik  │   │
-│  │(DB)    │(Cache) │(GitOps)│(Ingress) │   │
+│  ┌──────┬──────┬───────┬────────┬─────────┐   │
+│  │MySQL │Redis │Kafka  │ArgoCD  │Traefik  │   │
+│  │(DB)  │(Cache)│(MQ)  │(GitOps)│(Ingress)│   │
 │  └────────┴────────┴─────────┴──────────┘   │
 ├─────────────────────────────────────────────┤
 │   Observability Layer (可观测性层)           │
@@ -163,6 +164,7 @@ argocd-apps/
 │   ├── grafana-dashboards-app.yaml
 │   ├── mysql-app.yaml
 │   ├── redis-app.yaml
+│   ├── kafka-app.yaml
 │   ├── loki-app.yaml
 │   ├── tempo-app.yaml
 │   ├── otel-collector-app.yaml
@@ -211,8 +213,8 @@ argocd-apps/
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-├── repo/                            ← Helm Chart 仓库配置
-│   ├── argo-cd/                    (ArgoCD Helm Chart)
+├── repo/                            ← 初始化脚本及参考配置
+│   ├── init.sh
 │   └── argocd-values.yaml
 │
 └── ingress/                         ← Ingress 配置
@@ -254,6 +256,7 @@ Frontend Service (Vue.js)
    │      ├─→ DAO Service (数据访问)
    │      │      ├─→ MySQL (数据存储)
    │      │      └─→ Redis (缓存)
+   │      ├─→ Kafka (异步消息)
    │      └─→ OpenTelemetry Collector
    │              ├─→ Prometheus (指标)
    │              └─→ Tempo (链路追踪)

@@ -14,5 +14,8 @@ spec:
     - name: metrics
       port: 9104
       targetPort: 9104
+    - name: promtail-metrics
+      port: 9080
+      targetPort: 9080
   selector:
     app: mysql

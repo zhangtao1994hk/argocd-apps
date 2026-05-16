@@ -2,17 +2,20 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: mysql-exporter
-  namespace: middleware # 部署在和 mysql 相同的命名空间
+  namespace: middleware
   labels:
-    # 🌟 关键：就是靠这一行让 Prometheus 认出它！
     release: kube-prometheus-stack
 spec:
   selector:
     matchLabels:
-      # 这里必须和你的 MySQL Service 的标签完全一致
-      app: mysql 
+      app: mysql
   endpoints:
-    # 这里的 port 必须填你的 MySQL Service 暴露 9104 端口的 name（之前写的是 metrics）
     - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      honorLabels: true
+    - port: promtail-metrics
       interval: 30s
+      scrapeTimeout: 10s
       path: /metrics

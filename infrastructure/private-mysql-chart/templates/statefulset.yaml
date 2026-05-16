@@ -3,9 +3,12 @@ kind: StatefulSet
 metadata:
   name: mysql
   namespace: middleware
+  labels:
+    app: mysql
 spec:
   serviceName: mysql
   replicas: 1
+  podManagementPolicy: OrderedReady
   selector:
     matchLabels:
       app: mysql
@@ -14,34 +17,96 @@ spec:
       labels:
         app: mysql
       annotations:
-        # 如果你装了 Prometheus，这几行会让它自动来抓取 9104 端口的监控数据
         prometheus.io/scrape: "true"
         prometheus.io/port: "9104"
     spec:
+      terminationGracePeriodSeconds: 60
+
+      securityContext:
+        fsGroup: 999
+
       containers:
-        # --- 容器 1: 官方 MySQL ---
+        # ----------------------------------------------------------
+        # MySQL 8.0
+        # ----------------------------------------------------------
         - name: mysql
-          image: mysql:8.0 # Oracle 官方镜像，永久免费开源
+          image: mysql:8.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
           ports:
             - containerPort: 3306
+              name: mysql
           envFrom:
             - secretRef:
                 name: mysql-secret
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1.5Gi
+            limits:
+              cpu: 2
+              memory: 3Gi
           volumeMounts:
             - name: mysql-data
               mountPath: /var/lib/mysql
             - name: config-volume
-              # 将你的配置挂载到 K8s 官方推荐的扩展配置目录
               mountPath: /etc/mysql/conf.d/custom.cnf
               subPath: custom.cnf
-              
-        # --- 容器 2: 官方 Exporter (Sidecar) ---
+
+          livenessProbe:
+            exec:
+              command:
+                - mysqladmin
+                - ping
+                - -h
+                - 127.0.0.1
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - mysql
+                - -h
+                - 127.0.0.1
+                - -e
+                - "SELECT 1"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+        # ----------------------------------------------------------
+        # mysqld-exporter (Sidecar)
+        # ----------------------------------------------------------
         - name: mysqld-exporter
-          image: prom/mysqld-exporter:latest # Prometheus 官方镜像
+          image: prom/mysqld-exporter:v0.15.1
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9104
+              name: metrics
           args:
             - "--config.my-cnf=/etc/exporter/.my.cnf"
+            - "--collect.info_schema.processlist"
+            - "--collect.info_schema.tables"
+            - "--collect.info_schema.innodb_metrics"
+            - "--collect.perf_schema.eventsstatements"
+            - "--collect.perf_schema.eventswaits"
+            - "--collect.perf_schema.tablelocks"
+            - "--collect.perf_schema.indexiowaits"
+            - "--collect.slave_status"
+            - "--collect.binlog_size"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
           volumeMounts:
             - name: exporter-auth
               mountPath: /etc/exporter
@@ -49,7 +114,33 @@ spec:
           envFrom:
             - secretRef:
                 name: mysql-secret
-                
+
+        # ----------------------------------------------------------
+        # promtail (Sidecar) — 采集慢查询日志并推送至 Loki
+        # ----------------------------------------------------------
+        - name: promtail
+          image: grafana/promtail:3.2.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-config.file=/etc/promtail/promtail.yaml"
+          ports:
+            - containerPort: 9080
+              name: promtail-metrics
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/log/mysql
+              readOnly: true
+            - name: promtail-config
+              mountPath: /etc/promtail
+              readOnly: true
+
       volumes:
         - name: config-volume
           configMap:
@@ -57,14 +148,20 @@ spec:
             defaultMode: 0644
         - name: exporter-auth
           secret:
-            secretName: mysql-secret   
+            secretName: mysql-secret
+        - name: promtail-config
+          configMap:
+            name: mysql-promtail-config
+            defaultMode: 0644
 
-  # PVC 模板：保证 MySQL 哪怕 Pod 重启或漂移，数据也不会丢
   volumeClaimTemplates:
     - metadata:
         name: mysql-data
+        labels:
+          app: mysql
       spec:
-        accessModes: [ "ReadWriteOnce" ]
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: standard
         resources:
           requests:
-            storage: 10Gi
+            storage: 40Gi

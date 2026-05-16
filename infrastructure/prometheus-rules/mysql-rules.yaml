@@ -1,0 +1,156 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mysql-rules
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+    app: kube-prometheus-stack
+spec:
+  groups:
+  - name: mysql-slow-query-alerts
+    rules:
+
+    # ─── 慢查询速率告警 ──────────────────────────────────────
+    - alert: MySQLHighSlowQueryRate
+      expr: |
+        rate(mysql_global_status_slow_queries[5m]) > 5
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 慢查询速率过高"
+        description: |
+          实例 {{ $labels.instance }} 在过去 5 分钟内每秒产生
+          {{ $value | printf "%.2f" }} 条慢查询，请检查是否有性能问题。
+
+    # ─── 慢查询数量激增 ──────────────────────────────────────
+    - alert: MySQLSlowQueryCountSpike
+      expr: |
+        increase(mysql_global_status_slow_queries[10m]) > 100
+      for: 10m
+      labels:
+        severity: critical
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 慢查询激增"
+        description: |
+          实例 {{ $labels.instance }} 过去 10 分钟新增
+          {{ $value | printf "%.0f" }} 条慢查询，请立即排查。
+
+    # ─── 连接数使用率 > 80% ───────────────────────────────────
+    - alert: MySQLMaxConnectionsHigh
+      expr: |
+        (mysql_global_status_threads_connected
+         / mysql_global_variables_max_connections) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 连接数使用率过高"
+        description: |
+          当前连接数: {{ with query "mysql_global_status_threads_connected" }}{{ . | first | value | printf "%.0f" }}{{ end }}
+          最大连接数: {{ with query "mysql_global_variables_max_connections" }}{{ . | first | value | printf "%.0f" }}{{ end }}
+          (超过 80% 阈值)，请检查连接是否泄漏。
+
+    # ─── 连接数使用率 > 95% ───────────────────────────────────
+    - alert: MySQLMaxConnectionsCritical
+      expr: |
+        (mysql_global_status_threads_connected
+         / mysql_global_variables_max_connections) * 100 > 95
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 连接即将耗尽"
+        description: |
+          连接使用率已达 {{ $value | printf "%.1f" }}%，服务可能拒绝新连接。
+
+    # ─── InnoDB 行锁等待过多 ──────────────────────────────────
+    - alert: MySQLInnoDBRowLockHigh
+      expr: |
+        rate(mysql_global_status_innodb_row_lock_waits[5m]) > 10
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} InnoDB 行锁等待过多"
+        description: |
+          实例 {{ $labels.instance }} 行锁等待速率为
+          {{ $value | printf "%.2f" }}/s，可能存在锁争用问题。
+          请检查是否有长事务未提交。
+
+    # ─── 连接失败过多 ─────────────────────────────────────────
+    - alert: MySQLAbortedConnectsHigh
+      expr: |
+        rate(mysql_global_status_aborted_connects[5m]) > 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 连接失败过多"
+        description: |
+          实例 {{ $labels.instance }} 连接失败速率为
+          {{ $value | printf "%.2f" }}/s，请检查认证凭证或网络问题。
+
+    # ─── MySQL 实例不可达 ─────────────────────────────────────
+    - alert: MySQLDown
+      expr: |
+        mysql_up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 不可达"
+        description: |
+          实例 {{ $labels.instance }} 的 mysqld-exporter 未能抓取指标，
+          MySQL 可能已宕机，请立即检查。
+
+    # ─── 线程运行数过高 ───────────────────────────────────────
+    - alert: MySQLThreadsRunningHigh
+      expr: |
+        mysql_global_status_threads_running > 50
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 运行线程数过高"
+        description: |
+          当前运行线程数: {{ $value | printf "%.0f" }}，可能存在查询堆积。
+
+    # ─── Slave 复制延迟（预留——如果未配置则不影响）───────────────
+    - alert: MySQLReplicationLag
+      expr: |
+        mysql_slave_status_seconds_behind_master > 30
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "MySQL 实例 {{ $labels.instance }} 复制延迟"
+        description: |
+          从库延迟 {{ $value | printf "%.0f" }} 秒，已持续 5 分钟以上。
+
+    # ─── Promtail 日志采集管道异常 ──────────────────────────────
+    - alert: MySQLPromtailDroppingLines
+      expr: |
+        rate(promtail_dropped_lines_total{job="mysql-slow-query"}[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "MySQL 慢查询日志采集管道正在丢弃日志行"
+        description: |
+          实例 {{ $labels.instance }} 的 promtail 在过去 5 分钟内
+          丢弃了 {{ $value | printf "%.2f" }} 行/s，请检查 promtail 配置或
+          Loki 连接状态。
+
+    - alert: MySQLPromtailFileNotRead
+      expr: |
+        rate(promtail_read_lines_total{job="mysql-slow-query"}[15m]) == 0
+      for: 15m
+      labels:
+        severity: info
+      annotations:
+        summary: "MySQL 慢查询日志 15 分钟内无新增数据"
+        description: |
+          实例 {{ $labels.instance }} 的慢查询日志在过去 15 分钟内
+          没有新的日志行被读取。这可能是正常的（无慢查询），也可能表示采集管道已中断。

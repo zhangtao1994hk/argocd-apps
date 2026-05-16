@@ -148,6 +148,30 @@ kubectl port-forward -n monitoring svc/grafana 3000:80
 # 默认凭证通常在 kube-prometheus-stack 中定义
 ```
 
+### MySQL 慢查询分析 (Loki LogQL)
+
+在 Grafana Explore 中选择 Loki 数据源，使用以下查询：
+
+```logql
+# 查看所有慢查询日志
+{job="mysql-slow-query"}
+
+# 查询耗时 > 5 秒的慢查询
+{job="mysql-slow-query"} | label_format query_time | query_time > 5
+
+# 查询扫描行数 > 10000 的慢查询
+{job="mysql-slow-query"} | label_format rows_examined | rows_examined > 10000
+
+# 统计 1 小时内的慢查询数量
+count_over_time({job="mysql-slow-query"}[1h])
+
+# 按用户统计慢查询
+sum by(user) (count_over_time({job="mysql-slow-query"}[1h]))
+
+# 查询特定时间范围内的慢查询 (时间范围在 Grafana 面板选择)
+{job="mysql-slow-query"} | json | query_time > 1
+```
+
 ### 事件日志
 
 ```bash

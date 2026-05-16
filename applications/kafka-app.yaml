@@ -1,0 +1,77 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kafka-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: kafka
+    targetRevision: 29.4.0
+    helm:
+      values: |
+        # KRaft 模式（无需 Zookeeper）
+        kraft:
+          enabled: true
+
+        # 单节点集群（生产环境建议 3+ 副本）
+        replicaCount: 1
+
+        # 监听器配置
+        listeners:
+          client:
+            protocol: PLAINTEXT
+          interBroker:
+            protocol: PLAINTEXT
+          controller:
+            protocol: PLAINTEXT
+
+        # 持久化存储
+        persistence:
+          enabled: true
+          size: 20Gi
+
+        # 资源限制
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2
+            memory: 2Gi
+
+        # Heap 内存设置
+        heapOpts: -Xmx1g -Xms512m
+
+        # 自动创建 topic（可选）
+        provisioning:
+          enabled: false
+
+        # 日志保留策略
+        logRetentionHours: 72
+        logRetentionBytes: 10737418240
+        logSegmentBytes: 268435456
+
+        # 指标收集
+        metrics:
+          jmx:
+            enabled: true
+          kafka:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              namespace: middleware
+              labels:
+                release: kube-prometheus-stack
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: middleware
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
