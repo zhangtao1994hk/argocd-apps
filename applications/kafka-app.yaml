@@ -10,62 +10,53 @@ spec:
   source:
     repoURL: https://charts.bitnami.com/bitnami
     chart: kafka
-    targetRevision: 29.4.0
+    targetRevision: 32.4.3
     helm:
       values: |
-        # KRaft 模式（无需 Zookeeper）
-        kraft:
-          enabled: true
+        # ── 单节点集群 ──
+        controller:
+          replicaCount: 1
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2
+              memory: 2Gi
+          persistence:
+            enabled: true
+            size: 20Gi
 
-        # 单节点集群（生产环境建议 3+ 副本）
-        replicaCount: 1
+        # ── KRaft 模式（v32 已移除 Zookeeper）──
+        kraftVersion: 1
 
-        # 监听器配置
+        # ── 纯 PLAINTEXT（关闭 SASL，适合集群内部中间件）──
         listeners:
           client:
             protocol: PLAINTEXT
-          interBroker:
+          interbroker:
             protocol: PLAINTEXT
           controller:
             protocol: PLAINTEXT
 
-        # 持久化存储
-        persistence:
-          enabled: true
-          size: 20Gi
-
-        # 资源限制
-        resources:
-          requests:
-            cpu: 500m
-            memory: 1Gi
-          limits:
-            cpu: 2
-            memory: 2Gi
-
-        # Heap 内存设置
+        # ── Heap 配置 ──
         heapOpts: -Xmx1g -Xms512m
 
-        # 自动创建 topic（可选）
-        provisioning:
-          enabled: false
+        # ── 日志保留（通过 config 注入）──
+        config: |
+          log.retention.hours=72
+          log.retention.bytes=10737418240
+          log.segment.bytes=268435456
 
-        # 日志保留策略
-        logRetentionHours: 72
-        logRetentionBytes: 10737418240
-        logSegmentBytes: 268435456
-
-        # 指标收集
+        # ── 指标 + ServiceMonitor ──
         metrics:
           jmx:
             enabled: true
-          kafka:
+          serviceMonitor:
             enabled: true
-            serviceMonitor:
-              enabled: true
-              namespace: middleware
-              labels:
-                release: kube-prometheus-stack
+            namespace: middleware
+            labels:
+              release: kube-prometheus-stack
   destination:
     server: https://kubernetes.default.svc
     namespace: middleware
