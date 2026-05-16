@@ -7,7 +7,7 @@ spec:
     apiVersion: argoproj.io/v1alpha1  
     kind: Rollout
     name: frontend # 这里必须精准匹配你 Deployment 的名字
-  minReplicas: 2   # 最小副本数（最少跑几个）
+  minReplicas: 1   # 最小副本数（最少跑几个）
   maxReplicas: 5  # 最大副本数（流量再大也不要超过这个数，防止爆仓）
   metrics:
   - type: Resource
@@ -26,7 +26,7 @@ spec:
     apiVersion: argoproj.io/v1alpha1  
     kind: Rollout
     name: backend # 这里必须精准匹配你 Deployment 的名字
-  minReplicas: 2   # 最小副本数（最少跑几个）
+  minReplicas: 1   # 最小副本数（最少跑几个）
   maxReplicas: 10  # 最大副本数（流量再大也不要超过这个数，防止爆仓）
   metrics:
   - type: Resource
@@ -45,7 +45,7 @@ spec:
     apiVersion: argoproj.io/v1alpha1  
     kind: Rollout
     name: dao # 这里必须精准匹配你 Deployment 的名字
-  minReplicas: 2   # 最小副本数（最少跑几个）
+  minReplicas: 1   # 最小副本数（最少跑几个）
   maxReplicas: 10  # 最大副本数（流量再大也不要超过这个数，防止爆仓）
   metrics:
   - type: Resource
