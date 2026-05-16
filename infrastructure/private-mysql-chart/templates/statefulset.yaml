@@ -43,11 +43,11 @@ spec:
                 name: mysql-secret
           resources:
             requests:
-              cpu: 500m
-              memory: 1.5Gi
+              cpu: 100m
+              memory: 384Mi
             limits:
-              cpu: 2
-              memory: 3Gi
+              cpu: 500m
+              memory: 768Mi
           volumeMounts:
             - name: mysql-data
               mountPath: /var/lib/mysql
@@ -102,11 +102,11 @@ spec:
             - "--collect.binlog_size"
           resources:
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: 25m
+              memory: 32Mi
             limits:
-              cpu: 200m
-              memory: 128Mi
+              cpu: 100m
+              memory: 64Mi
           volumeMounts:
             - name: exporter-auth
               mountPath: /etc/exporter
@@ -128,11 +128,11 @@ spec:
               name: promtail-metrics
           resources:
             requests:
-              cpu: 25m
-              memory: 64Mi
+              cpu: 10m
+              memory: 32Mi
             limits:
-              cpu: 200m
-              memory: 256Mi
+              cpu: 100m
+              memory: 128Mi
           volumeMounts:
             - name: mysql-data
               mountPath: /var/log/mysql
@@ -164,4 +164,4 @@ spec:
         storageClassName: standard
         resources:
           requests:
-            storage: 40Gi
+            storage: 10Gi

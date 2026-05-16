@@ -18,14 +18,14 @@ spec:
           replicaCount: 1
           resources:
             requests:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 100m
+              memory: 256Mi
             limits:
-              cpu: 2
-              memory: 2Gi
+              cpu: 500m
+              memory: 768Mi
           persistence:
             enabled: true
-            size: 20Gi
+            size: 5Gi
 
         # ── KRaft 模式（v32 已移除 Zookeeper）──
         kraftVersion: 1
@@ -40,7 +40,7 @@ spec:
             protocol: PLAINTEXT
 
         # ── Heap 配置 ──
-        heapOpts: -Xmx1g -Xms512m
+        heapOpts: -Xmx256m -Xms128m
 
         # ── 日志保留（通过 config 注入）──
         config: |

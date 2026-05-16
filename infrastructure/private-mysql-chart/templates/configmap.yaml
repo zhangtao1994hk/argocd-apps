@@ -10,9 +10,9 @@ data:
     # ============================================================
     # 基础设置
     # ============================================================
-    max_connections = 500
-    max_connect_errors = 10000
-    max_allowed_packet = 256M
+    max_connections = 200
+    max_connect_errors = 1000
+    max_allowed_packet = 64M
     character-set-server = utf8mb4
     collation-server = utf8mb4_general_ci
     default_time_zone = +08:00
@@ -33,16 +33,16 @@ data:
     # ============================================================
     # InnoDB 引擎调优
     # ============================================================
-    innodb_buffer_pool_size = 1G
-    innodb_buffer_pool_instances = 4
-    innodb_log_file_size = 256M
-    innodb_log_buffer_size = 16M
+    innodb_buffer_pool_size = 128M
+    innodb_buffer_pool_instances = 1
+    innodb_log_file_size = 64M
+    innodb_log_buffer_size = 8M
     innodb_flush_log_at_trx_commit = 1
     innodb_flush_method = O_DIRECT
-    innodb_io_capacity = 200
-    innodb_io_capacity_max = 500
-    innodb_read_io_threads = 4
-    innodb_write_io_threads = 4
+    innodb_io_capacity = 100
+    innodb_io_capacity_max = 200
+    innodb_read_io_threads = 2
+    innodb_write_io_threads = 2
     innodb_file_per_table = 1
     innodb_lock_wait_timeout = 10
     innodb_rollback_on_timeout = 1
@@ -59,7 +59,7 @@ data:
     binlog_format = ROW
     binlog_row_image = FULL
     binlog_expire_logs_days = 7
-    max_binlog_size = 256M
+    max_binlog_size = 128M
     sync_binlog = 1
     binlog_cache_size = 1M
     binlog_stmt_cache_size = 1M
@@ -71,8 +71,8 @@ data:
     # ============================================================
     # 临时表与排序
     # ============================================================
-    tmp_table_size = 128M
-    max_heap_table_size = 128M
+    tmp_table_size = 64M
+    max_heap_table_size = 64M
     sort_buffer_size = 2M
     join_buffer_size = 2M
     read_buffer_size = 2M
@@ -81,9 +81,9 @@ data:
     # ============================================================
     # 表缓存与文件句柄
     # ============================================================
-    table_open_cache = 4000
-    table_definition_cache = 2048
-    open_files_limit = 10000
+    table_open_cache = 1000
+    table_definition_cache = 512
+    open_files_limit = 2000
 
     # ============================================================
     # Performance Schema（慢查询监控基础）
