@@ -1,23 +1,89 @@
+################################################################################
+# Root Application - App of Apps 模式
+#
+# 这是一个特殊的 ArgoCD Application，用来管理所有其他 Application
+# 当这个根应用同步时，它会自动发现并管理 applications/ 目录中的所有应用
+################################################################################
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: root-app
   namespace: argocd
-  # 删除根 App 时，级联删除所有子 App
+  
+  # finalizers 确保安全删除：删除此应用时，会级联删除所有子应用
+  # ⚠️  如果要完全清理，需要先手动删除此应用（或设置 cascade=background）
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+
 spec:
+  # 使用默认项目
   project: default
+  
   source:
+    # Git 仓库地址
     repoURL: https://github.com/zhangtao1994hk/argocd-apps.git
+    
+    # Git 分支或标签（main 分支）
     targetRevision: main
-    path: applications        # 指向存放所有子 Application yaml 的目录
+    
+    # 重要：指向存放所有 Application 的目录
+    # ArgoCD 会自动发现此目录中的所有 *.yaml 文件，并将其识别为 Application
+    path: applications
+  
   destination:
+    # 目标 Kubernetes 集群（https://kubernetes.default.svc 表示当前集群）
     server: https://kubernetes.default.svc
-    namespace: argocd         # 子 Application 资源本身部署在 argocd 命名空间
+    
+    # 子 Application 资源本身部署在 argocd 命名空间
+    # （实际的应用可以部署在其他命名空间）
+    namespace: argocd
+  
   syncPolicy:
+    # 自动同步策略
     automated:
-      prune: true             # 自动删除 Git 中已移除的子 App
-      selfHeal: true          # 自动修复手动改动导致的漂移
+      # 当 Git 中删除了某个 Application 时，自动删除对应的应用
+      # ⚠️  谨慎：此选项确保集群与 Git 完全同步
+      prune: true
+      
+      # 当集群中的资源被手动修改时，自动恢复为 Git 中的状态
+      # （self-healing：自我修复）
+      selfHeal: true
+    
+    # 同步选项
     syncOptions:
+      # 如果目标命名空间不存在，自动创建
       - CreateNamespace=true
+      
+      # 其他可选的同步选项（注释示例）：
+      # - PruneLast=true              # 同步完成后再删除资源（更安全）
+      # - RespectIgnoreDifferences=true  # 忽略某些已知的差异
+
+################################################################################
+# App of Apps 模式的优势
+#
+# 1. 单一入口：通过 root-app 管理所有应用
+# 2. 自动发现：Git 中新增的 Application 自动被检测和部署
+# 3. 级联管理：删除 root-app 自动清理所有资源
+# 4. 版本控制：所有应用配置都在 Git，支持完整的变更历史
+# 5. 跨团队：不同团队可在 applications/ 目录下创建自己的 Application
+#
+# 文件结构示例：
+# applications/
+#   ├── backend-app.yaml        (Backend 服务)
+#   ├── frontend-app.yaml       (Frontend 服务)
+#   ├── mysql-app.yaml          (MySQL 数据库)
+#   ├── redis-app.yaml          (Redis 缓存)
+#   ├── prometheus-app.yaml     (监控)
+#   ├── grafana-dashboards-app.yaml
+#   └── ... (更多应用)
+#
+# 每个 Application 定义自己的：
+#   - 源代码位置（Git path）
+#   - 目标命名空间
+#   - 同步策略
+#   - 依赖关系（可选）
+#
+################################################################################
+
+

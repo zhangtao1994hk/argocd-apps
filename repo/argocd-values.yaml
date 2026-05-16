@@ -1,0 +1,42 @@
+# argocd-values.yaml
+
+server:
+  # 开启 Insecure 模式 (注意这里是列表格式)
+  extraArgs:
+    - --insecure
+  
+  # 配置外部 URL
+  config:
+    url: "https://argocd.zhangtao1994hk.asia"
+
+  # 开启 Server 监控
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: "kube-prometheus-stack"
+
+controller:
+  # 开启 Controller 监控
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: "kube-prometheus-stack"
+
+repoServer:
+  # 开启 Repo Server 监控
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: "kube-prometheus-stack"
+
+# (可选) 如果你以后想加 Google 登录，直接在这里补充
+# configs:
+#   cm:
+#     dex.config: |
+#       ...
